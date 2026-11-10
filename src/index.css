@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-50: #FBF7EE;
+  --color-gold-100: #F7EFCB;
+  --color-gold-200: #E9D7A0;
+  --color-gold-300: #DFC688;
+  --color-gold-400: #D4AF37;
+  --color-gold-500: #C5A253;
+  --color-gold-600: #A08035;
+  --color-gold-700: #7D6428;
+  --color-gold-800: #5A471C;
+  --color-gold-900: #3A2E11;
+
+  --color-saffron-50: #FDF2EB;
+  --color-saffron-100: #FBE4D4;
+  --color-saffron-200: #F6C8A6;
+  --color-saffron-300: #EEA674;
+  --color-saffron-400: #DE7335;
+  --color-saffron-500: #BF5B21;
+  --color-saffron-600: #A34B19;
+  --color-saffron-700: #843C13;
+  --color-saffron-800: #642E0F;
+  --color-saffron-900: #46200A;
+
+  --color-maroon-50: #FDF2F4;
+  --color-maroon-100: #FBE2E7;
+  --color-maroon-200: #F4BCC8;
+  --color-maroon-300: #E48398;
+  --color-maroon-400: #CA4B68;
+  --color-maroon-500: #6B1728;
+  --color-maroon-600: #500E1C;
+  --color-maroon-700: #3D0914;
+  --color-maroon-800: #2C060D;
+  --color-maroon-900: #1B0307;
+
+  --color-sand-50: #FFFDF0;
+  --color-sand-100: #FBF9F4;
+  --color-sand-200: #F4EFE6;
+  --color-sand-300: #EFEAE1;
+  --color-sand-400: #E8E2D5;
+  --color-sand-500: #D2C8B8;
+  --color-sand-600: #B5A894;
+  --color-sand-700: #8F826E;
+  --color-sand-800: #685D4D;
+  --color-sand-900: #443B2F;
+
+  --color-charcoal-50: #F6F5F4;
+  --color-charcoal-100: #E7E5E3;
+  --color-charcoal-200: #C8C4C0;
+  --color-charcoal-300: #A8A19B;
+  --color-charcoal-400: #898078;
+  --color-charcoal-500: #6B5E51;
+  --color-charcoal-600: #53483E;
+  --color-charcoal-700: #3B3530;
+  --color-charcoal-800: #25211E;
+  --color-charcoal-900: #1E1B18;
+
+  --font-serif: "Cinzel", "Playfair Display", Georgia, serif;
+  --font-sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  background-color: #F6F5F2;
+  color: #1E1B18;
+}
+
+/* Custom luxury scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F4EFE6;
+}
+::-webkit-scrollbar-thumb {
+  background: #DFC688;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C5A253;
+}
