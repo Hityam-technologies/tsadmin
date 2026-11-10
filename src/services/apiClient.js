@@ -23,7 +23,13 @@ import {
 } from './mockData';
 
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+
+// Local dev talks straight to the API (usually http://localhost:5000).
+// The live site uses a same-site /api path. Vercel forwards that path to the
+// real API, so the browser is not blocked for calling a different website.
+const API_BASE_URL = import.meta.env.PROD
+  ? ''
+  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
 // In-Memory Security Token (Never persisted to localStorage or sessionStorage)
 let inMemoryAccessToken = null;
@@ -110,7 +116,9 @@ function buildUrl(endpoint, query) {
   const path = endpoint.startsWith('/api/v1')
     ? endpoint
     : `/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-  const url = new URL(`${API_BASE_URL}${path}`);
+  // An empty base means "this same website". new URL needs a full base either way.
+  const base = API_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000');
+  const url = new URL(path, base);
   Object.entries(query || {}).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '' || value === 'all') return;
     url.searchParams.set(key, String(value));
