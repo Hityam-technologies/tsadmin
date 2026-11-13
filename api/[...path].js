@@ -1,9 +1,9 @@
 /**
- * Sign-in proxy.
+ * API proxy.
  *
- * The browser talks only to this admin site. This function passes the
- * auth call to the atelier API and copies the session cookie back onto
- * the admin site, so a reload can sign the person in again.
+ * The browser stays on the admin site. This function carries each /api
+ * call to the atelier API and copies the session cookie onto this site,
+ * so a reload opens the dashboard instead of the login screen.
  */
 
 const UPSTREAM = 'https://tripuraabackend.onrender.com';
