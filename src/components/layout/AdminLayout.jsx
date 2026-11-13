@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { BrandGradientBackground } from '../common/BrandGradientBackground';
 import homeLogo from '../../assets/homeLogo.png';
 import {
   LayoutDashboard,
@@ -138,46 +139,55 @@ export function AdminLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F6F5F2] p-3 sm:p-4 lg:p-5 flex gap-5 font-sans antialiased text-charcoal-900 selection:bg-gold-200">
-      {/* =========================================================================
-          LEFT SIDEBAR: Floating Rounded Card (matching screenshot)
-         ========================================================================= */}
-      <aside className="hidden lg:flex w-72 rounded-[28px] bg-white border border-sand-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.02)] p-5 flex-col justify-between flex-shrink-0 sticky top-5 h-[calc(100vh-2.5rem)]">
-        <div>
-          {/* Top Brand Logo - Clean, prominent, no enclosing box */}
-          <div className="pt-2 pb-6 px-1 flex items-center justify-center">
-            <img
-              src={homeLogo}
-              alt="Tripuraa Sangrahah"
-              className="w-full max-w-[215px] h-auto max-h-24 object-contain"
-            />
-          </div>
+    <BrandGradientBackground idPrefix="admin_">
+      <div className="min-h-screen p-3 sm:p-4 lg:p-5 flex gap-5 font-sans antialiased text-charcoal-900 selection:bg-gold-200">
+        {/* =========================================================================
+            LEFT SIDEBAR: Floating Rounded Card with Frosted Luxury Glass
+           ========================================================================= */}
+        <aside className="hidden lg:flex w-72 rounded-[28px] bg-white/85 backdrop-blur-xl border border-sand-200/90 shadow-[0_12px_36px_rgba(197,162,83,0.10)] p-5 flex-col justify-between flex-shrink-0 sticky top-5 h-[calc(100vh-2.5rem)]">
+          <div>
+            {/* Top Brand Header Badge with Royal Saffron Silk Gradient */}
+            <div className="pt-1 pb-5 px-0.5">
+              <div className="relative rounded-2xl p-4 bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_8px_24px_rgba(191,91,33,0.32),0_2px_6px_rgba(0,0,0,0.12)] flex items-center justify-center overflow-hidden group">
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-35"
+                  style={{
+                    background: 'radial-gradient(ellipse at 50% 20%, rgba(255, 235, 195, 0.6) 0%, transparent 70%)',
+                  }}
+                />
+                <img
+                  src={homeLogo}
+                  alt="Tripuraa Sangrahah"
+                  className="relative z-10 w-full max-w-[215px] h-auto max-h-20 object-contain brand-logo-on-saffron transition-transform hover:scale-[1.02]"
+                />
+              </div>
+            </div>
 
-          {/* Section Header */}
-          <div className="px-3 mb-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-charcoal-400">
-              MAIN MENU
-            </span>
-          </div>
+            {/* Section Header */}
+            <div className="px-3 mb-3">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-charcoal-400">
+                MAIN MENU
+              </span>
+            </div>
 
-          {/* Nav Items List */}
-          <nav className="space-y-1.5">
-            {navItems.map((item) => {
-              if (!item.allowed) return null;
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === '/'}
-                  className={({ isActive }) =>
-                    `flex items-center px-3.5 py-3 rounded-2xl text-sm transition-all ${
-                      isActive
-                        ? 'bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-sand-200 font-extrabold text-charcoal-900'
-                        : 'text-charcoal-600 hover:text-charcoal-900 hover:bg-sand-50 font-bold'
-                    }`
-                  }
-                >
+            {/* Nav Items List */}
+            <nav className="space-y-1.5">
+              {navItems.map((item) => {
+                if (!item.allowed) return null;
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.path === '/'}
+                    className={({ isActive }) =>
+                      `flex items-center px-3.5 py-3 rounded-2xl text-sm transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-white via-white to-sand-50/90 shadow-[0_2px_12px_rgba(197,162,83,0.12)] border border-gold-300/80 font-extrabold text-charcoal-900'
+                          : 'text-charcoal-600 hover:text-charcoal-900 hover:bg-sand-50/80 font-bold'
+                      }`
+                    }
+                  >
                   {({ isActive }) => (
                     <>
                       {/* Active Indicator Bar on left edge */}
@@ -244,8 +254,8 @@ export function AdminLayout() {
           RIGHT MAIN CONTAINER: Top Floating Nav Bar + Main View Area
          ========================================================================= */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Floating Top Bar (matching screenshot, generously proportioned) */}
-        <header className="rounded-[24px] bg-white border border-sand-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.03)] px-5 sm:px-7 py-3.5 sm:py-4 mb-6 flex items-center justify-between gap-4 sticky top-5 z-30">
+        {/* Floating Top Bar with Frosted Glass */}
+        <header className="rounded-[24px] bg-white/85 backdrop-blur-xl border border-sand-200/90 shadow-[0_4px_20px_rgba(197,162,83,0.06)] px-5 sm:px-7 py-3.5 sm:py-4 mb-6 flex items-center justify-between gap-4 sticky top-5 z-30">
           {/* Left: Mobile Toggle + Nav Chevrons + Search Input Pill */}
           <div className="flex items-center gap-3.5 min-w-0">
             <button
@@ -333,17 +343,19 @@ export function AdminLayout() {
               className="fixed inset-0 bg-charcoal-900/50 backdrop-blur-sm"
               onClick={() => setIsMobileMenuOpen(false)}
             />
-            <div className="fixed inset-y-0 left-0 w-72 bg-white p-5 shadow-2xl flex flex-col justify-between">
+            <div className="fixed inset-y-0 left-0 w-72 bg-[#FFFDF0]/95 backdrop-blur-xl p-5 shadow-2xl flex flex-col justify-between border-r border-gold-200/80">
               <div>
-                <div className="flex items-center justify-between pb-4 border-b border-sand-200 mb-4">
-                  <img
-                    src={homeLogo}
-                    alt="Tripuraa Sangrahah"
-                    className="max-h-12 w-auto max-w-[180px] object-contain"
-                  />
+                <div className="flex items-center justify-between pb-4 border-b border-sand-200/80 mb-4">
+                  <div className="p-3 rounded-2xl bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_6px_20px_rgba(191,91,33,0.28)] flex-1 mr-3 flex items-center justify-center relative overflow-hidden">
+                    <img
+                      src={homeLogo}
+                      alt="Tripuraa Sangrahah"
+                      className="relative z-10 max-h-12 w-auto max-w-[170px] object-contain brand-logo-on-saffron"
+                    />
+                  </div>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-1 rounded-lg text-charcoal-500 hover:bg-sand-100"
+                    className="p-1.5 rounded-xl text-charcoal-500 hover:bg-sand-100/80 cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -361,7 +373,7 @@ export function AdminLayout() {
                         className={({ isActive }) =>
                           `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold ${
                             isActive
-                              ? 'bg-gold-50 text-gold-900 border border-gold-300'
+                              ? 'bg-gold-50 text-gold-900 border border-gold-300 shadow-2xs'
                               : 'text-charcoal-600 hover:bg-sand-100'
                           }`
                         }
@@ -377,7 +389,7 @@ export function AdminLayout() {
               <div className="pt-4 border-t border-sand-200">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-maroon-700 hover:bg-maroon-50"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-maroon-700 hover:bg-maroon-50 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
@@ -392,6 +404,7 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
-    </div>
+      </div>
+    </BrandGradientBackground>
   );
 }

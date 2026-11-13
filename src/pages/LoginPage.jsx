@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { BrandGradientBackground } from '../components/common/BrandGradientBackground';
 import homeLogo from '../assets/homeLogo.png';
 import { Mail, Lock, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
@@ -52,20 +53,29 @@ export function LoginPage() {
 
 
   return (
-    <div className="min-h-screen bg-sand-100/70 flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-gold-200">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        {/* Brand Logo - Direct, prominent, no box */}
-        <div className="flex justify-center mb-3">
-          <img
-            src={homeLogo}
-            alt="Tripuraa Sangrahah"
-            className="w-full max-w-[240px] h-auto max-h-24 object-contain"
-          />
+    <BrandGradientBackground idPrefix="login_">
+      <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-gold-200">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+          {/* Brand Logo in Royal Saffron Silk Gradient Badge */}
+          <div className="flex justify-center mb-4 px-4">
+            <div className="relative rounded-2xl p-4 bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_8px_28px_rgba(191,91,33,0.32)] flex items-center justify-center overflow-hidden">
+              <div
+                className="absolute inset-0 pointer-events-none opacity-35"
+                style={{
+                  background: 'radial-gradient(ellipse at 50% 20%, rgba(255, 235, 195, 0.6) 0%, transparent 70%)',
+                }}
+              />
+              <img
+                src={homeLogo}
+                alt="Tripuraa Sangrahah"
+                className="relative z-10 w-full max-w-[240px] h-auto max-h-24 object-contain brand-logo-on-saffron"
+              />
+            </div>
+          </div>
+          <p className="text-xs uppercase tracking-widest text-gold-700 font-bold font-sans">
+            Heritage Handloom Atelier &bull; Management Portal
+          </p>
         </div>
-        <p className="text-xs uppercase tracking-widest text-gold-700 font-semibold font-sans">
-          Heritage Handloom Atelier &bull; Management Portal
-        </p>
-      </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="bg-white py-8 px-6 shadow-xl rounded-2xl sm:px-10 border border-gold-200">
@@ -230,6 +240,7 @@ export function LoginPage() {
           </form>
         )}
       </Modal>
-    </div>
+      </div>
+    </BrandGradientBackground>
   );
 }

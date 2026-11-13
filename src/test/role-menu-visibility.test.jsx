@@ -61,5 +61,28 @@ describe('Admin Navigation & Atelier Suite Visibility', () => {
     // User name
     expect(screen.getByText('Maharani Gayatri')).toBeInTheDocument();
   });
+
+  it('renders Tripuraa Sangrahah brand logo with high-contrast gradient header badge', async () => {
+    await authService.login('admin@tripuraa.in', 'Password@123');
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <ToastProvider>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<AdminLayout />}>
+                <Route index element={<div>Dashboard Page</div>} />
+              </Route>
+            </Routes>
+          </AuthProvider>
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    const logoImages = screen.getAllByAltText('Tripuraa Sangrahah');
+    expect(logoImages.length).toBeGreaterThan(0);
+    // Primary desktop sidebar logo has the saffron contrast shadow applied for clear visibility
+    expect(logoImages[0]).toHaveClass('brand-logo-on-saffron');
+  });
 });
 

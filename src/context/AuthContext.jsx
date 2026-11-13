@@ -5,13 +5,11 @@ import { restoreAdminSession, setSessionLostHandler, USE_MOCK } from '../service
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // Access token and user strictly held in memory
-  const [currentUser, setCurrentUser] = useState(() => {
-    return authService.getCurrentUser();
-  });
+  const [currentUser, setCurrentUser] = useState(() => authService.getCurrentUser());
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(!USE_MOCK);
+  // A saved sign-in is shown at once. The cookie refresh runs behind it.
+  const [isRestoring, setIsRestoring] = useState(!USE_MOCK && !authService.getCurrentUser());
 
   useEffect(() => {
     let live = true;

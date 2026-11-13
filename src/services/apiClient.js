@@ -1,9 +1,9 @@
 /**
- * Central API Client & In-Memory Storage Adapter
+ * Central API Client.
  *
- * Implements strict memory-only token storage (never localStorage for access token).
- * Seamlessly toggles between local in-memory simulation and real backend HTTP endpoints
- * via VITE_USE_MOCK environment variable.
+ * The short-lived sign-in is kept in this browser tab (sessionStorage) so a reload
+ * stays on the dashboard. The httpOnly cookie is what extends that sign-in.
+ * Mock mode keeps everything in memory for tests.
  */
 
 import {
@@ -24,29 +24,57 @@ import {
 
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
-// Local dev talks straight to the API (usually http://localhost:5000).
-// The live site uses a same-site /api path. Vercel forwards that path to the
-// real API, so the browser is not blocked for calling a different website.
-const API_BASE_URL = import.meta.env.PROD
-  ? ''
-  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+// Empty means "this same website". Vite (local) and Vercel (live) forward /api.
+const API_BASE_URL = '';
+const SESSION_KEY = 'tsadmin.session';
 
-// In-Memory Security Token (Never persisted to localStorage or sessionStorage)
 let inMemoryAccessToken = null;
 let inMemoryCurrentUser = null;
+
+function readSavedSession() {
+  if (USE_MOCK || typeof sessionStorage === 'undefined') return null;
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+    if (!saved?.token || !saved?.user) return null;
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+function writeSavedSession() {
+  if (USE_MOCK || typeof sessionStorage === 'undefined') return;
+  if (inMemoryAccessToken && inMemoryCurrentUser) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      token: inMemoryAccessToken,
+      user: inMemoryCurrentUser,
+    }));
+    return;
+  }
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
+const savedSession = readSavedSession();
+if (savedSession) {
+  inMemoryAccessToken = savedSession.token;
+  inMemoryCurrentUser = savedSession.user;
+}
 
 export const tokenStore = {
   getToken: () => inMemoryAccessToken,
   setToken: (token) => {
     inMemoryAccessToken = token;
+    writeSavedSession();
   },
   getUser: () => inMemoryCurrentUser,
   setUser: (user) => {
     inMemoryCurrentUser = user;
+    writeSavedSession();
   },
   clear: () => {
     inMemoryAccessToken = null;
     inMemoryCurrentUser = null;
+    writeSavedSession();
   },
 };
 
@@ -154,22 +182,22 @@ async function refreshAdminSession() {
       .then(async (response) => {
         const json = await response.json().catch(() => ({}));
         if (!response.ok || !json?.data?.token) {
-          // Leave a sign-in that finished while this refresh was still running.
-          if (tokenStore.getToken() === tokenAtStart) {
+          // A reload still has the saved sign-in. Only wipe it when there was none.
+          if (!tokenAtStart && tokenStore.getToken() === tokenAtStart) {
             tokenStore.clear();
             sessionLostHandler?.();
           }
-          return null;
+          return tokenStore.getUser();
         }
         tokenStore.setToken(json.data.token);
         return rememberAdmin(json.data.user);
       })
       .catch(() => {
-        if (tokenStore.getToken() === tokenAtStart) {
+        if (!tokenAtStart && tokenStore.getToken() === tokenAtStart) {
           tokenStore.clear();
           sessionLostHandler?.();
         }
-        return null;
+        return tokenStore.getUser();
       })
       .finally(() => {
         refreshFlight = null;
@@ -198,8 +226,13 @@ async function realRequest(endpoint, options = {}, retried = false) {
   }
 
   if (response.status === 401 && !retried && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+    const tokenBeforeRefresh = tokenStore.getToken();
     const user = await refreshAdminSession();
-    if (user) return realRequest(endpoint, options, true);
+    if (user && tokenStore.getToken() && tokenStore.getToken() !== tokenBeforeRefresh) {
+      return realRequest(endpoint, options, true);
+    }
+    tokenStore.clear();
+    sessionLostHandler?.();
   }
 
   const json = await response.json().catch(() => ({}));
