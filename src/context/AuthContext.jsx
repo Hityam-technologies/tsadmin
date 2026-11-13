@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { restoreAdminSession, setSessionLostHandler, USE_MOCK } from '../services/apiClient';
+import { restoreAdminSession, setSessionLostHandler, syncSessionFromStorage, USE_MOCK } from '../services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -23,9 +23,19 @@ export function AuthProvider({ children }) {
       .finally(() => {
         if (live) setIsRestoring(false);
       });
+
+    // A sign-in or sign-out in one tab updates the others without a reload.
+    const onStorage = (event) => {
+      if (event.key && event.key !== 'tsadmin.session') return;
+      if (!live) return;
+      setCurrentUser(syncSessionFromStorage());
+    };
+    window.addEventListener('storage', onStorage);
+
     return () => {
       live = false;
       setSessionLostHandler(null);
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 

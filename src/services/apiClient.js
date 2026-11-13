@@ -1,8 +1,8 @@
 /**
  * Central API Client.
  *
- * The short-lived sign-in is kept in this browser tab (sessionStorage) so a reload
- * stays on the dashboard. The httpOnly cookie is what extends that sign-in.
+ * The sign-in is saved for this whole site (localStorage), so a new tab opens
+ * the dashboard already signed in. It is not kept per tab.
  * Mock mode keeps everything in memory for tests.
  */
 
@@ -31,10 +31,24 @@ const SESSION_KEY = 'tsadmin.session';
 let inMemoryAccessToken = null;
 let inMemoryCurrentUser = null;
 
+function browserStore() {
+  if (USE_MOCK || typeof localStorage === 'undefined') return null;
+  return localStorage;
+}
+
 function readSavedSession() {
-  if (USE_MOCK || typeof sessionStorage === 'undefined') return null;
+  const store = browserStore();
+  if (!store) return null;
   try {
-    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+    // Older builds saved the sign-in in one tab only. Move it so every tab can use it.
+    if (!store.getItem(SESSION_KEY) && typeof sessionStorage !== 'undefined') {
+      const previous = sessionStorage.getItem(SESSION_KEY);
+      if (previous) {
+        store.setItem(SESSION_KEY, previous);
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    }
+    const saved = JSON.parse(store.getItem(SESSION_KEY) || 'null');
     if (!saved?.token || !saved?.user) return null;
     return saved;
   } catch {
@@ -43,15 +57,24 @@ function readSavedSession() {
 }
 
 function writeSavedSession() {
-  if (USE_MOCK || typeof sessionStorage === 'undefined') return;
+  const store = browserStore();
+  if (!store) return;
   if (inMemoryAccessToken && inMemoryCurrentUser) {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+    store.setItem(SESSION_KEY, JSON.stringify({
       token: inMemoryAccessToken,
       user: inMemoryCurrentUser,
     }));
     return;
   }
-  sessionStorage.removeItem(SESSION_KEY);
+  store.removeItem(SESSION_KEY);
+}
+
+/** Other tabs call this when the saved sign-in changes. */
+export function syncSessionFromStorage() {
+  const saved = readSavedSession();
+  inMemoryAccessToken = saved?.token || null;
+  inMemoryCurrentUser = saved?.user || null;
+  return inMemoryCurrentUser;
 }
 
 const savedSession = readSavedSession();
