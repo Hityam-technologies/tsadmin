@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { GuestRoute } from '../components/auth/GuestRoute';
 import { authService } from '../services/authService';
 
 function TestProtectedComponent() {
@@ -65,6 +66,30 @@ describe('Auth & Route Guards', () => {
               }
             />
             <Route path="/login" element={<div>Login Screen Displayed</div>} />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Secret Atelier Dashboard')).toBeInTheDocument();
+  });
+
+  it('skips the login screen when a session is already saved', async () => {
+    await authService.login('admin@tripuraa.in', 'Password@123');
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <AuthProvider>
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                <GuestRoute>
+                  <div>Login Screen Displayed</div>
+                </GuestRoute>
+              }
+            />
+            <Route path="/" element={<div>Secret Atelier Dashboard</div>} />
           </Routes>
         </AuthProvider>
       </MemoryRouter>

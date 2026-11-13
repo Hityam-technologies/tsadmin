@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { GuestRoute } from './components/auth/GuestRoute';
 import { AdminLayout } from './components/layout/AdminLayout';
 
 // Pages
@@ -34,48 +35,36 @@ export function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-              {/* Public Auth Routes */}
-              <Route path="/login" element={<LoginPage />} />
-
-              {/* Protected Administration Routes */}
+              {/* Signed-out only. A saved session skips this screen. */}
               <Route
-                path="/"
+                path="/login"
+                element={
+                  <GuestRoute>
+                    <LoginPage />
+                  </GuestRoute>
+                }
+              />
+
+              {/* Signed-in pages. "/" is the dashboard, the home of the portal. */}
+              <Route
                 element={
                   <ProtectedRoute>
                     <AdminLayout />
                   </ProtectedRoute>
                 }
               >
-                {/* 1. Dashboard */}
                 <Route index element={<DashboardPage />} />
-
-                {/* 2. Saree Master Catalog */}
                 <Route path="sarees" element={<SareesPage />} />
-
-                {/* 3. Category Stories */}
                 <Route path="categories" element={<CategoriesPage />} />
-
-                {/* 4. Client Enquiries & Bespoke Orders */}
                 <Route path="enquiries" element={<EnquiriesPage />} />
-
-                {/* 5. Customers & Atelier Directory */}
                 <Route path="users" element={<UsersPage />} />
-
-                {/* 6. FASHN.ai Virtual Try-On Studio (Automated AI Engine) */}
                 <Route path="try-on-ai" element={<TryOnAIPage />} />
                 <Route path="try-on-moderation" element={<Navigate to="/try-on-ai" replace />} />
-
-                {/* 7. Content Studio */}
                 <Route path="content" element={<ContentStudioPage />} />
-
-                {/* 8. System Configuration */}
                 <Route path="settings" element={<SystemSettingsPage />} />
-
-                {/* 9. Immutable Audit Trail */}
                 <Route path="audit-logs" element={<AuditLogsPage />} />
               </Route>
 
-              {/* Fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

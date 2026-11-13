@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { restoreAdminSession, USE_MOCK } from '../services/apiClient';
+import { restoreAdminSession, setSessionLostHandler, USE_MOCK } from '../services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -15,6 +15,9 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let live = true;
+    setSessionLostHandler(() => {
+      if (live) setCurrentUser(null);
+    });
     restoreAdminSession()
       .then((user) => {
         if (live && user) setCurrentUser(user);
@@ -24,6 +27,7 @@ export function AuthProvider({ children }) {
       });
     return () => {
       live = false;
+      setSessionLostHandler(null);
     };
   }, []);
 
@@ -32,7 +36,7 @@ export function AuthProvider({ children }) {
     try {
       const result = await authService.login(email, password);
       if (result.success) {
-        setCurrentUser(result.data.user);
+        setCurrentUser(result.data?.user ? { ...result.data.user, role: result.data.user.role || 'admin' } : authService.getCurrentUser());
         return { success: true };
       }
       return { success: false, error: result.error?.message || 'Login failed' };

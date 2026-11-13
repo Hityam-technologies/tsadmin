@@ -1,4 +1,4 @@
-import { apiRequest, tokenStore, db, recordAuditLog, USE_MOCK } from './apiClient';
+import { apiRequest, tokenStore, db, recordAuditLog, USE_MOCK, rememberAdmin } from './apiClient';
 
 export const authService = {
   /**
@@ -53,7 +53,7 @@ export const authService = {
     );
     if (result.success && result.data?.token) {
       tokenStore.setToken(result.data.token);
-      tokenStore.setUser(result.data.user);
+      rememberAdmin(result.data.user);
     }
     return result;
   },

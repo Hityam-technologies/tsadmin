@@ -50,6 +50,23 @@ export const tokenStore = {
   },
 };
 
+let sessionLostHandler = null;
+
+export function setSessionLostHandler(handler) {
+  sessionLostHandler = handler;
+}
+
+/** This portal only admits admins, even if the API omits the role field. */
+export function rememberAdmin(user) {
+  if (!user) {
+    tokenStore.setUser(null);
+    return null;
+  }
+  const admin = { ...user, role: user.role || 'admin' };
+  tokenStore.setUser(admin);
+  return admin;
+}
+
 // In-Memory Live Mutable Database State
 export const db = {
   sarees: JSON.parse(JSON.stringify(INITIAL_SAREES)),
@@ -128,6 +145,7 @@ function buildUrl(endpoint, query) {
 
 async function refreshAdminSession() {
   if (!refreshFlight) {
+    const tokenAtStart = tokenStore.getToken();
     refreshFlight = fetch(`${API_BASE_URL}/api/v1/admin/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
@@ -136,15 +154,21 @@ async function refreshAdminSession() {
       .then(async (response) => {
         const json = await response.json().catch(() => ({}));
         if (!response.ok || !json?.data?.token) {
-          tokenStore.clear();
+          // Leave a sign-in that finished while this refresh was still running.
+          if (tokenStore.getToken() === tokenAtStart) {
+            tokenStore.clear();
+            sessionLostHandler?.();
+          }
           return null;
         }
         tokenStore.setToken(json.data.token);
-        tokenStore.setUser(json.data.user);
-        return json.data.user;
+        return rememberAdmin(json.data.user);
       })
       .catch(() => {
-        tokenStore.clear();
+        if (tokenStore.getToken() === tokenAtStart) {
+          tokenStore.clear();
+          sessionLostHandler?.();
+        }
         return null;
       })
       .finally(() => {
