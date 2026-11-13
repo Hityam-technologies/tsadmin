@@ -1,8 +1,8 @@
 /**
  * API proxy.
  *
- * The browser stays on the admin site. This function carries each /api
- * call to the atelier API and copies the session cookie onto this site,
+ * Every /api call on the admin site is handed to this one function.
+ * It calls the atelier API and copies the session cookie onto this site,
  * so a reload opens the dashboard instead of the login screen.
  */
 
@@ -45,17 +45,27 @@ function stickToThisSite(setCookie) {
   return cookie;
 }
 
+function upstreamUrl(req) {
+  const incoming = new URL(req.url, 'https://tsadmin.local');
+  const forwarded = incoming.searchParams.get('path');
+  if (forwarded) {
+    const search = new URLSearchParams(incoming.search);
+    search.delete('path');
+    const extra = search.toString();
+    return new URL(`/api/${forwarded}${extra ? `?${extra}` : ''}`, UPSTREAM);
+  }
+  return new URL(incoming.pathname + incoming.search, UPSTREAM);
+}
+
 export default async function handler(req, res) {
   try {
-    const incoming = new URL(req.url, 'https://tsadmin.local');
-    const target = new URL(incoming.pathname + incoming.search, UPSTREAM);
     const headers = {};
     for (const [key, value] of Object.entries(req.headers)) {
       if (!value || SKIP.has(key.toLowerCase())) continue;
       headers[key] = Array.isArray(value) ? value.join(', ') : value;
     }
 
-    const upstream = await fetch(target, {
+    const upstream = await fetch(upstreamUrl(req), {
       method: req.method,
       headers,
       body: await readBody(req),
