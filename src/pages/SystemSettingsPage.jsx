@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { systemService } from '../services/systemService';
+import { billingService } from '../services/billingService';
 import { authService } from '../services/authService';
 import { useToast } from '../context/ToastContext';
 import { Badge } from '../components/common/Badge';
@@ -19,6 +20,7 @@ function readConfig(data) {
     maintenanceNotice: data?.maintenanceNotice || '',
     tryOnModel: data?.tryOnModel || 'tryon-v1.6',
     tryOnDailyLimitPerUser: data?.tryOnDailyLimitPerUser ?? 20,
+    gstRate: data?.gstRate ?? 5,
     featureFlags: {
       enableTryOn: tryOnOn,
       enableBespokeConcierge: flags.enableBespokeConcierge !== false,
@@ -68,6 +70,7 @@ export function SystemSettingsPage() {
       maintenanceNotice: config.maintenanceNotice || '',
       tryOnModel: config.tryOnModel || 'tryon-v1.6',
       tryOnDailyLimitPerUser: Number(config.tryOnDailyLimitPerUser) || 20,
+      gstRate: Number(config.gstRate) || 0,
       featureFlags: {
         enableTryOn: Boolean(config.featureFlags?.enableTryOn),
         enableBespokeConcierge: Boolean(config.featureFlags?.enableBespokeConcierge),
@@ -182,6 +185,22 @@ export function SystemSettingsPage() {
                 <option value="tryon-max">tryon-max</option>
               </select>
             </div>
+            <div>
+              <label className="block text-xs font-semibold text-charcoal-800 mb-1">GST rate (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={config.gstRate ?? 5}
+                onChange={(e) => setConfig({ ...config, gstRate: Number(e.target.value) })}
+                className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs text-charcoal-900"
+              />
+              <span className="text-[10px] text-charcoal-400 mt-1 block">
+                Inclusive GST used on the next bill. Completed invoices keep the rate they were raised with.
+              </span>
+            </div>
+            <CashierPinForm />
             <div>
               <label className="block text-xs font-semibold text-charcoal-800 mb-1">Daily try-ons per customer</label>
               <input
@@ -330,6 +349,54 @@ export function SystemSettingsPage() {
         </div>
       </div>
       <PasswordCard />
+    </div>
+  );
+}
+
+function CashierPinForm() {
+  const { showToast } = useToast();
+  const [name, setName] = useState('');
+  const [pin, setPin] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!/^\d{6}$/.test(pin)) {
+      showToast('The billing PIN must be 6 digits.', 'error');
+      return;
+    }
+    setSaving(true);
+    const res = await billingService.createCashier({ name, pin, role: 'Cashier', register: 'Counter 01' });
+    setSaving(false);
+    if (!res.success) {
+      showToast(res.error?.message || 'The cashier was not saved.', 'error');
+      return;
+    }
+    setName('');
+    setPin('');
+    showToast(`${res.data.staff.name} can now open the billing register.`, 'success');
+  };
+
+  return (
+    <div className="space-y-2 rounded-xl border border-sand-200 p-3">
+      <p className="text-xs font-semibold text-charcoal-900">Billing cashier</p>
+      <p className="text-[10px] text-charcoal-500">This PIN opens the register. It is not the admin password.</p>
+      <input
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        placeholder="Cashier name"
+        className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs text-charcoal-900"
+      />
+      <input
+        value={pin}
+        onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 6))}
+        inputMode="numeric"
+        autoComplete="off"
+        placeholder="6-digit PIN"
+        className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs font-mono text-charcoal-900"
+      />
+      <button type="button" onClick={submit} disabled={saving} className="px-3 py-2 rounded-xl bg-charcoal-900 text-white text-xs disabled:opacity-50">
+        {saving ? 'Saving...' : 'Save cashier PIN'}
+      </button>
     </div>
   );
 }

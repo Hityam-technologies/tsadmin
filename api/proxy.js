@@ -2,7 +2,7 @@
  * API proxy.
  *
  * Every /api call on the admin site is handed to this one function.
- * It calls the atelier API and copies the session cookie onto this site,
+ * It calls the backend API and copies the session cookie onto this site,
  * so a reload opens the dashboard instead of the login screen.
  */
 
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
   } catch {
     res.status(502).json({
       success: false,
-      error: { code: 'NETWORK', message: 'The atelier API is unreachable.' },
+      error: { code: 'NETWORK', message: 'the backend API is unreachable.' },
     });
   }
 }

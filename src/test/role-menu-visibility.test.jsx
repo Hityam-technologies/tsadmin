@@ -6,12 +6,12 @@ import { ToastProvider } from '../context/ToastContext';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { authService } from '../services/authService';
 
-describe('Admin Navigation & Atelier Suite Visibility', () => {
+describe('Admin Navigation & Admin Suite Visibility', () => {
   beforeEach(() => {
     authService.logout();
   });
 
-  it('displays full suite of navigation items to the Atelier Admin', async () => {
+  it('displays full suite of navigation items to the Admin', async () => {
     await authService.login('admin@tripuraa.in', 'Password@123');
 
     render(

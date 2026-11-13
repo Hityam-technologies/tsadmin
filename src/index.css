@@ -121,3 +121,37 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #C5A253;
 }
+
+/* Prevent outer window scrolling in billing mode */
+html:has(.billing-app-root),
+body:has(.billing-app-root) {
+  overflow: hidden !important;
+  height: 100% !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* Explicit scrollbar for billing cards */
+.billing-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #C5A253 rgba(233, 215, 160, 0.25);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.billing-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.billing-scrollbar::-webkit-scrollbar-track {
+  background: rgba(244, 239, 230, 0.6);
+  border-radius: 8px;
+}
+.billing-scrollbar::-webkit-scrollbar-thumb {
+  background: #C5A253;
+  border-radius: 8px;
+}
+.billing-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #BF5B21;
+}

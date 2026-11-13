@@ -355,7 +355,7 @@ export function EnquiriesPage() {
                       /[^0-9]/g,
                       ''
                     )}?text=${encodeURIComponent(
-                      `Namaste ${selectedEnquiry.customerName}, regarding your inquiry for ${selectedEnquiry.sareeTitle} at Tripuraa Sangrahah Atelier:`
+                      `Namaste ${selectedEnquiry.customerName}, regarding your inquiry for ${selectedEnquiry.sareeTitle} at Tripuraa Sangrahah:`
                     )}`}
                     target="_blank"
                     rel="noreferrer"

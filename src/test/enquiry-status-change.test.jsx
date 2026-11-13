@@ -22,11 +22,11 @@ describe('Enquiry Management & Status Lifecycle', () => {
   it('appends an internal stylist note to an enquiry', async () => {
     const res = await enquiryService.addNote(
       'ENQ-2041',
-      'Client scheduled atelier viewing on Friday 4 PM',
+      'Client scheduled store viewing on Friday 4 PM',
       'Meenakshi Iyer'
     );
     expect(res.success).toBe(true);
-    expect(res.data.text).toBe('Client scheduled atelier viewing on Friday 4 PM');
+    expect(res.data.text).toBe('Client scheduled store viewing on Friday 4 PM');
     expect(res.data.author).toBe('Meenakshi Iyer');
   });
 

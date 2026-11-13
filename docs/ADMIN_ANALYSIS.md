@@ -22,7 +22,7 @@ The goal of this admin panel is to ensure that the mobile application remains ev
 | **Virtual Try-On Studio** | `screens/private/wardrobeTab/tryOnScreen.jsx`, `tryOnContext.js` | User silhouette portrait, AI Drape simulation overlay, flat weave preview, scan animation | FASHN.ai automated generation telemetry, API quota tracking, drape sandbox testing, API key config | **FASHN.ai Try-On** (`/try-on-ai`), **System** (`/settings`) |
 | **Wardrobe Screen** | `screens/private/wardrobeTab/wardrobeScreen.jsx` | Segmented views: "Saved Sarees" (Wishlist items) & "Try-On Looks" (Personal Lookbook) | Inspect customer interest metrics, popular wishlisted weaves, view user saved looks | **Dashboard** (`/`), **Users Detail** (`/users/:id`) |
 | **Enquiries & Orders** | Triggered from Saree Detail & Concierge Support | Customer bespoke weaving inquiries, bridal trousseau booking requests, WhatsApp pings | Track inquiry lifecycle (New → Contacted → Confirmed → Closed → Cancelled), internal notes, WhatsApp/Call/Email actions, CSV export | **Enquiries & Orders** (`/enquiries`) |
-| **Store Atelier Sheet** | `components/storeAddressBottomSheet.jsx`, `data/supportStoreData.js` | Flagship studio address (Road No. 36, Jubilee Hills, Hyderabad), landmark, open hours, GPS coordinates | Update atelier address lines, opening timings, Google Maps URL / query, landmark notes | **Content Studio** (`/content/store`) |
+| **Store Address Sheet** | `components/storeAddressBottomSheet.jsx`, `data/supportStoreData.js` | Flagship studio address (Road No. 36, Jubilee Hills, Hyderabad), landmark, open hours, GPS coordinates | Update store address lines, opening timings, Google Maps URL / query, landmark notes | **Content Studio** (`/content/store`) |
 | **Support Sheet** | `components/supportBottomSheet.jsx`, `data/supportStoreData.js` | WhatsApp number (`+919876543210`), greeting message, Instagram handle, toll-free helpline | Add, remove, update and reorder support channels, edit pre-filled WhatsApp concierge text | **Content Studio** (`/content/support`) |
 | **FAQ Screen** | `screens/private/accountTab/faqScreen.jsx`, `data/faqData.js` | 6 Handloom Q&As (Silk Mark authenticity, zari care, bridal consultation, shipping, AI Try-On privacy) | Add, edit, delete, and drag-and-drop reorder frequently asked questions | **Content Studio** (`/content/faq`) |
 | **Terms of Service** | `termsOfServiceScreen.jsx`, `data/legalPolicies.js` | 6 legal clauses (Handloom Heritage, Bespoke Commissions, Pricing & Taxes, Transit Insurance, IP/Copyright) | Markdown / rich text clause editor, section addition, revision audit timestamp | **Content Studio** (`/content/terms`) |
@@ -32,7 +32,7 @@ The goal of this admin panel is to ensure that the mobile application remains ev
 
 ## 2. Administrative Architecture (Unified Single Admin Model)
 
-Based on actual atelier workflow requirements, all administrative capabilities are consolidated into a unified **Admin** role (`role: 'admin'`). A single administrative credential (`admin@tripuraa.in` / `Password@123`) has full operational control over the entire platform without artificial role barriers:
+Based on actual store workflow requirements, all administrative capabilities are consolidated into a unified **Admin** role (`role: 'admin'`). A single administrative credential (`admin@tripuraa.in` / `Password@123`) has full operational control over the entire platform without artificial role barriers:
 
 ### Full Admin Capabilities
 - **Master Saree Catalog**: Full CRUD (Create, Read, Update, Delete, Duplicate), multi-photo drag-to-reorder, primary cover selection, flat image vs model drape designation, inventory status updates (`In Stock`, `1 Heritage Weave Left`, `2 Pieces Crafted`, `Handcrafted on Order`, `Out of Stock`), bulk actions, and low-stock monitoring.
@@ -40,7 +40,7 @@ Based on actual atelier workflow requirements, all administrative capabilities a
 - **Concierge Inquiries & CRM**: Pipeline management (`New`, `Contacted`, `Confirmed`, `Closed`, `Cancelled`), append internal timestamped CRM notes, trigger one-click WhatsApp concierge chat, phone dialer, or email, and CSV export.
 - **Client & Customer Security**: View customer profiles, wishlists, saved 3D looks, and suspend/reinstate fraudulent accounts.
 - **FASHN.ai Try-On Studio**: Telemetry tracking, API quota monitoring, safety filter review, API key configuration, and interactive live drape testing sandbox.
-- **Content Studio**: Live management of Hero video reel, flagship atelier store address, customer support channels, FAQ accordion, and legal terms/privacy markdown policies.
+- **Content Studio**: Live management of Hero video reel, Flagship Boutique store address, customer support channels, FAQ accordion, and legal terms/privacy markdown policies.
 - **System Settings & App Governance**: Minimum mobile app version enforcement, emergency force-update toggle, feature flags (e.g., Enable FASHN.ai Try-On, Concierge WhatsApp), and API endpoints.
 - **Immutable Audit Trail**: Cryptographic timestamped logging of every administrative update, price adjustment, and security action.
 
@@ -61,7 +61,7 @@ Based on actual atelier workflow requirements, all administrative capabilities a
 | **Users (Block / Unblock)** | Full Access | Fraud prevention, suspension management |
 | **FASHN.ai Try-On (Telemetry, Sandbox, Quota)** | Full Access | Monitor generation logs, sandbox testing |
 | **FASHN.ai Config (API Key, Model Parameters)** | Full Access | Manage FASHN.ai integration and credentials |
-| **Content Studio (Hero Video, Address, Support)**| Full Access | Live updates to mobile hero reel, atelier address, support |
+| **Content Studio (Hero Video, Address, Support)**| Full Access | Live updates to mobile hero reel, store address, support |
 | **Content Studio (FAQ Editor)** | Full Access | Q&A creation, ordering, active switch |
 | **Content Studio (Legal Terms & Privacy)** | Full Access | Markdown legal clause editor with live preview |
 | **System Settings (Min Version, Flags)** | Full Access | Minimum app barrier, force update switch, feature flags |

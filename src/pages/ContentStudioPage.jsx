@@ -35,7 +35,7 @@ export function ContentStudioPage() {
     isActive: true,
   });
 
-  // 2. Store Atelier State
+  // 2. STORE State
   const [storeAddress, setStoreAddress] = useState({
     name: '',
     tagline: '',
@@ -108,7 +108,7 @@ export function ContentStudioPage() {
   const handleSaveStore = async (e) => {
     e.preventDefault();
     const res = await contentService.updateStoreAddress(storeAddress);
-    if (res.success) showToast('Atelier studio address updated', 'success');
+    if (res.success) showToast('store studio address updated', 'success');
   };
 
   // Channel Save & Reorder
@@ -229,7 +229,7 @@ export function ContentStudioPage() {
 
   const tabs = [
     { id: 'hero', label: 'Hero Video Reel', icon: Film },
-    { id: 'store', label: 'Store Atelier Address', icon: MapPin },
+    { id: 'store', label: 'Store Address', icon: MapPin },
     { id: 'support', label: 'Support Concierge Channels', icon: MessageCircle },
     { id: 'faq', label: 'FAQ Manager', icon: HelpCircle },
     { id: 'legal', label: 'Legal Terms & Policy', icon: FileText },
@@ -388,13 +388,13 @@ export function ContentStudioPage() {
         </form>
       )}
 
-      {/* Tab 2: Store Atelier Address */}
+      {/* Tab 2: Store Address */}
       {activeTab === 'store' && (
         <form onSubmit={handleSaveStore} className="bg-white p-6 rounded-2xl border border-sand-300 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-sand-200 pb-4">
             <div>
               <h3 className="font-serif font-bold text-base text-charcoal-900">
-                Flagship Studio Atelier Information
+                Flagship Studio Information
               </h3>
               <p className="text-xs text-charcoal-500">
                 Shown in the mobile "Store Address" bottom sheet and Google Maps navigation modal.
@@ -411,7 +411,7 @@ export function ContentStudioPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                Atelier Studio Name
+                Studio Name
               </label>
               <input
                 type="text"

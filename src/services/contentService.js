@@ -20,7 +20,7 @@ export const contentService = {
     );
   },
 
-  // --- 2. STORE ATELIER ADDRESS ---
+  // --- 2. Store Address ---
   async getStoreAddress() {
     return apiRequest('/admin/content/store', { method: 'GET' }, async () => {
       return db.storeDetails;
@@ -33,7 +33,7 @@ export const contentService = {
       { method: 'PUT', body: JSON.stringify(data) },
       async () => {
         db.storeDetails = { ...db.storeDetails, ...data };
-        recordAuditLog('UPDATE_STORE_ADDRESS', 'content', 'Updated Jubilee Hills boutique atelier coordinates and hours');
+        recordAuditLog('UPDATE_STORE_ADDRESS', 'content', 'Updated Jubilee Hills boutique store coordinates and hours');
         return db.storeDetails;
       }
     );

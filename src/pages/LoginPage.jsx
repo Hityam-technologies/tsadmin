@@ -4,9 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { BrandGradientBackground } from '../components/common/BrandGradientBackground';
 import homeLogo from '../assets/homeLogo.png';
-import { Mail, Lock, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, ArrowRight, Sparkles, Store } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { USE_MOCK } from '../services/apiClient';
+import { billingService } from '../services/billingService';
 
 export function LoginPage() {
   const { login, forgotPassword, isLoading } = useAuth();
@@ -32,7 +33,7 @@ export function LoginPage() {
 
     const res = await login(email, password);
     if (res.success) {
-      showToast('Welcome to Tripuraa Sangrahah Atelier', 'success');
+      showToast('Welcome to Tripuraa Sangrahah', 'success');
       const origin = location.state?.from?.pathname || '/';
       navigate(origin, { replace: true });
     } else {
@@ -73,7 +74,7 @@ export function LoginPage() {
             </div>
           </div>
           <p className="text-xs uppercase tracking-widest text-gold-700 font-bold font-sans">
-            Heritage Handloom Atelier &bull; Management Portal
+            Heritage Handloom Store &bull; Management Portal
           </p>
         </div>
 
@@ -88,7 +89,7 @@ export function LoginPage() {
 
             <div>
               <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                Atelier Email
+                Admin Email
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -147,7 +148,7 @@ export function LoginPage() {
                   'Authenticating...'
                 ) : (
                   <>
-                    Sign In to Atelier <ArrowRight className="w-4 h-4" />
+                    Sign In to Portal <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
@@ -176,7 +177,22 @@ export function LoginPage() {
           ) : null}
         </div>
 
-        <div className="mt-6 text-center text-xs text-charcoal-500 flex items-center justify-center gap-2">
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              billingService.clearStaffSession();
+              navigate('/billing-access');
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gold-50/80 hover:bg-gold-100 border border-gold-300 text-xs font-bold text-gold-900 transition-all shadow-2xs cursor-pointer"
+          >
+            <Store className="w-4 h-4 text-gold-700" />
+            <span>Store Billing Access</span>
+            <ArrowRight className="w-3.5 h-3.5 text-gold-700" />
+          </button>
+        </div>
+
+        <div className="mt-4 text-center text-xs text-charcoal-500 flex items-center justify-center gap-2">
           <ShieldCheck className="w-4 h-4 text-gold-600" />
           <span>Tripuraa Sangrahah Weavers Guild &bull; Authorized Personnel Only</span>
         </div>

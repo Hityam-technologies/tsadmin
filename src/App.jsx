@@ -1,10 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { GuestRoute } from './components/auth/GuestRoute';
+import { SessionGate } from './components/auth/SessionGate';
 import { AdminLayout } from './components/layout/AdminLayout';
 
 // Pages
@@ -18,6 +19,8 @@ import { TryOnAIPage } from './pages/TryOnAIPage';
 import { ContentStudioPage } from './pages/ContentStudioPage';
 import { SystemSettingsPage } from './pages/SystemSettingsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
+import { BillingWorkspacePage } from './pages/BillingWorkspacePage';
+import { BillingAccessPage } from './pages/BillingAccessPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +31,24 @@ const queryClient = new QueryClient({
   },
 });
 
+function RootGate() {
+  const { currentUser, isRestoring } = useAuth();
+
+  if (isRestoring) return <SessionGate />;
+
+  // If signed in, display the Executive Dashboard inside AdminLayout
+  if (currentUser) {
+    return (
+      <AdminLayout>
+        <DashboardPage />
+      </AdminLayout>
+    );
+  }
+
+  // Initial landing screen: Store Billing Access with 6-digit PIN entry
+  return <BillingAccessPage />;
+}
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -35,6 +56,15 @@ export function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
+              {/* Root Gate */}
+              <Route path="/" element={<RootGate />} />
+
+              {/* Store Billing Access (PIN Entry) */}
+              <Route path="/billing-access" element={<BillingAccessPage />} />
+
+              {/* Store Billing / POS Interface */}
+              <Route path="/billing" element={<BillingWorkspacePage />} />
+
               {/* Signed-out only. A saved session skips this screen. */}
               <Route
                 path="/login"
@@ -45,7 +75,7 @@ export function App() {
                 }
               />
 
-              {/* Signed-in pages. "/" is the dashboard, the home of the portal. */}
+              {/* Signed-in Admin routes */}
               <Route
                 element={
                   <ProtectedRoute>
@@ -53,7 +83,7 @@ export function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<DashboardPage />} />
+                <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="sarees" element={<SareesPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="enquiries" element={<EnquiriesPage />} />

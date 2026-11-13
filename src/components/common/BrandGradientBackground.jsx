@@ -13,7 +13,7 @@ import React from 'react';
 export function BrandGradientBackground({
   children,
   className = '',
-  idPrefix = 'atelier_',
+  idPrefix = 'ts_',
   variant = 'cream-gold',
   style = {},
 }) {
@@ -41,9 +41,11 @@ export function BrandGradientBackground({
         bg: '#FFFDF0',
       };
 
+  const hasExplicitHeight = className.includes('h-screen') || className.includes('h-[') || className.includes('max-h-');
+
   return (
     <div
-      className={`relative min-h-screen w-full ${className}`}
+      className={`relative w-full ${hasExplicitHeight ? '' : 'min-h-screen'} ${className}`}
       style={{
         backgroundColor: colors.bg,
         ...style,

@@ -148,7 +148,7 @@ export function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-charcoal-900 tracking-tight">
-            Atelier Dashboard
+            Store Dashboard
           </h1>
           <p className="text-xs sm:text-sm font-medium text-charcoal-500 mt-0.5">
             Tripuraa Sangrahah mobile catalog, virtual try-on activity & concierge support.
@@ -158,7 +158,7 @@ export function DashboardPage() {
         {/* Live Status Pill */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-sand-200/90 shadow-2xs text-xs">
           <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse" />
-          <span className="font-bold text-charcoal-800">Atelier Live Operations</span>
+          <span className="font-bold text-charcoal-800">Store Live Operations</span>
           <span className="text-sand-300">|</span>
           <span className="font-mono text-[11px] font-semibold text-charcoal-500">v1.2.0</span>
         </div>

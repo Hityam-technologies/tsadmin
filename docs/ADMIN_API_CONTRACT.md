@@ -326,7 +326,7 @@ Executes an interactive test drape sandbox run.
 Hero video metadata: URL, title, subtitle, poster image, isActive.
 
 ### `GET /admin/content/store` & `PUT /admin/content/store`
-Atelier details: name, address lines, landmark, timings, latitude, longitude, mapsQuery.
+Store details: name, address lines, landmark, timings, latitude, longitude, mapsQuery.
 
 ### `GET /admin/content/support` & `PUT /admin/content/support`
 Channels array: WhatsApp, Instagram, Helpline phone, display label, order.

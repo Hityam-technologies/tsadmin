@@ -21,9 +21,10 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
+  Store,
 } from 'lucide-react';
 
-export function AdminLayout() {
+export function AdminLayout({ children }) {
   const { currentUser, logout } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ export function AdminLayout() {
 
   const handleLogout = () => {
     logout();
-    showToast('Signed out from Tripuraa Sangrahah Atelier', 'info');
+    showToast('Signed out from Tripuraa Sangrahah', 'info');
     navigate('/login');
   };
 
@@ -86,6 +87,12 @@ export function AdminLayout() {
       label: 'Dashboard',
       path: '/',
       icon: LayoutDashboard,
+      allowed: true,
+    },
+    {
+      label: 'Store Billing / POS',
+      path: '/billing',
+      icon: Store,
       allowed: true,
     },
     {
@@ -217,7 +224,7 @@ export function AdminLayout() {
           <div className="rounded-full border border-sand-200/90 bg-sand-50/80 px-3.5 py-2 flex items-center justify-between text-xs text-charcoal-700">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-gold-500 animate-pulse" />
-              <span className="font-extrabold text-charcoal-900">Atelier Online</span>
+              <span className="font-extrabold text-charcoal-900">Store Online</span>
             </div>
             <span className="text-xs text-charcoal-500 font-mono font-bold px-2 py-0.5 rounded-full bg-white border border-sand-200">
               v1.2
@@ -401,7 +408,7 @@ export function AdminLayout() {
 
         {/* Main Content Router Outlet */}
         <main className="flex-1 min-w-0">
-          <Outlet />
+          {children || <Outlet />}
         </main>
       </div>
       </div>

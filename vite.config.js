@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
     ],
     server: {
-      // The browser talks to this dev site only. Vite forwards /api to the atelier API
+      // The browser talks to this dev site only. Vite forwards /api to the backend API
       // and keeps the sign-in cookie here, so a reload does not ask for the password again.
       proxy: {
         '/api': {

@@ -105,7 +105,7 @@ export function UsersPage() {
             Client Directory
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-charcoal-900 tracking-tight mt-0.5">
-            Registered Customers & Atelier Accounts
+            Registered Customers & Staff Accounts
           </h1>
           <p className="text-xs sm:text-sm text-charcoal-500 mt-1 font-medium">
             Monitor client wishlists, 3D try-on looks, enquiries, and account security.

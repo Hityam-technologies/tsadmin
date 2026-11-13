@@ -20,6 +20,10 @@ import {
   INITIAL_LEGAL_POLICY,
   INITIAL_SYSTEM_CONFIG,
   INITIAL_AUDIT_LOGS,
+  INITIAL_BILLING_STAFF,
+  INITIAL_INVOICES,
+  INITIAL_HELD_BILLS,
+  INITIAL_BILLING_CUSTOMERS,
 } from './mockData';
 
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
@@ -133,6 +137,10 @@ export const db = {
   legalPolicy: JSON.parse(JSON.stringify(INITIAL_LEGAL_POLICY)),
   systemConfig: JSON.parse(JSON.stringify(INITIAL_SYSTEM_CONFIG)),
   auditLogs: JSON.parse(JSON.stringify(INITIAL_AUDIT_LOGS)),
+  billingStaff: JSON.parse(JSON.stringify(INITIAL_BILLING_STAFF)),
+  invoices: JSON.parse(JSON.stringify(INITIAL_INVOICES)),
+  heldBills: JSON.parse(JSON.stringify(INITIAL_HELD_BILLS)),
+  billingCustomers: JSON.parse(JSON.stringify(INITIAL_BILLING_CUSTOMERS)),
 };
 
 /**
@@ -245,7 +253,7 @@ async function realRequest(endpoint, options = {}, retried = false) {
       credentials: 'include',
     });
   } catch {
-    return { success: false, error: { code: 'NETWORK', message: 'The atelier API is unreachable.' } };
+    return { success: false, error: { code: 'NETWORK', message: 'the backend API is unreachable.' } };
   }
 
   if (response.status === 401 && !retried && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {

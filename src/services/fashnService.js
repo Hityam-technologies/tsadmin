@@ -246,7 +246,7 @@ export const fashnService = {
     return apiRequest('/admin/try-on/jobs', { method: 'GET' }, async () => {
       const newRun = {
         id: `fashn-run-${Date.now().toString().slice(-4)}`,
-        customerName: 'Atelier Stylist (Sandbox)',
+        customerName: 'Store Stylist (Sandbox)',
         customerId: 'admin-sandbox',
         sareeId: payload.sareeId,
         sareeTitle: payload.sareeTitle,

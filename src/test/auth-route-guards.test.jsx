@@ -7,7 +7,7 @@ import { GuestRoute } from '../components/auth/GuestRoute';
 import { authService } from '../services/authService';
 
 function TestProtectedComponent() {
-  return <div>Secret Atelier Dashboard</div>;
+  return <div>Secret Store Dashboard</div>;
 }
 
 describe('Auth & Route Guards', () => {
@@ -71,7 +71,7 @@ describe('Auth & Route Guards', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Secret Atelier Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Secret Store Dashboard')).toBeInTheDocument();
   });
 
   it('skips the login screen when a session is already saved', async () => {
@@ -89,12 +89,12 @@ describe('Auth & Route Guards', () => {
                 </GuestRoute>
               }
             />
-            <Route path="/" element={<div>Secret Atelier Dashboard</div>} />
+            <Route path="/" element={<div>Secret Store Dashboard</div>} />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Secret Atelier Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Secret Store Dashboard')).toBeInTheDocument();
   });
 });

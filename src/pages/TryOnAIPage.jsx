@@ -389,7 +389,7 @@ export function TryOnAIPage() {
           <div className="bg-white p-6 rounded-[24px] border border-sand-300/80 shadow-sm space-y-5">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-gold-700">
-                Atelier Playground
+                Studio Playground
               </span>
               <h3 className="font-serif text-lg font-bold text-charcoal-900 mt-0.5">
                 Simulate FASHN.ai Drape Prediction
