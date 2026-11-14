@@ -119,6 +119,57 @@ export const billingService = {
     return Boolean(this.getStaffSession());
   },
 
+  /**
+   * An admin who is already signed in opens the register directly.
+   * The cashier PIN stays for the counter, and is not asked again here.
+   */
+  async openFromAdmin() {
+    if (USE_MOCK) {
+      const staff = {
+        id: 'stf-admin',
+        name: 'Admin',
+        role: 'Admin',
+        register: 'Admin Portal',
+        loginAt: new Date().toISOString(),
+      };
+      this.setStaffSession(staff);
+      return { success: true, staff };
+    }
+    const res = await apiRequest('/admin/billing/session', { method: 'POST', body: '{}' });
+    if (!res?.success || !res.data?.token) {
+      return { success: false, error: res?.error?.message || 'The register could not be opened.' };
+    }
+    writeBillingToken(res.data.token);
+    this.setStaffSession({ ...res.data.staff, loginAt: new Date().toISOString() });
+    return { success: true, staff: this.getStaffSession() };
+  },
+
+  async fetchRegisterCatalog() {
+    if (USE_MOCK) {
+      return {
+        products: await this.searchProducts(),
+        categories: await Promise.resolve(this.listCategories()),
+        error: '',
+      };
+    }
+    const [products, categories] = await Promise.all([
+      billingRequest('/products'),
+      billingRequest('/categories'),
+    ]);
+    if (!products.success) {
+      return {
+        products: [],
+        categories: [],
+        error: products.error || 'The saree list could not be loaded.',
+      };
+    }
+    return {
+      products: products.data?.products || [],
+      categories: categories.success ? categories.data?.categories || [] : [],
+      error: '',
+    };
+  },
+
   async createCashier(input) {
     return apiRequest('/admin/billing/staff', {
       method: 'POST',

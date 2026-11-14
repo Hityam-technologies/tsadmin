@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { billingService } from '../services/billingService';
+import { readBillingToken } from '../services/billingApi';
 import { useAuth } from '../context/AuthContext';
+import { SessionGate } from '../components/auth/SessionGate';
 import { useToast } from '../context/ToastContext';
 import { BillingLayout } from '../components/billing/BillingLayout';
 import { ProductCatalog } from '../components/billing/ProductCatalog';
@@ -18,19 +21,56 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { BillingAccessPage } from './BillingAccessPage';
 
 export function BillingWorkspacePage() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, isRestoring } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
-  const [isUnlocked, setIsUnlocked] = useState(() => billingService.isAuthenticated());
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [opening, setOpening] = useState(true);
+  const [openError, setOpenError] = useState('');
+  const [sessionReady, setSessionReady] = useState(false);
 
-
-  // Keep state synchronized
+  // An admin who is already signed in opens the register. A cashier still uses the PIN.
   useEffect(() => {
-    setIsUnlocked(billingService.isAuthenticated());
-  }, []);
+    if (isRestoring) return undefined;
+    let cancelled = false;
+    (async () => {
+      setOpening(true);
+      setOpenError('');
+      if (currentUser) {
+        const res = await billingService.openFromAdmin();
+        if (cancelled) return;
+        if (!res.success) {
+          setIsUnlocked(false);
+          setSessionReady(false);
+          setOpenError(res.error || 'The register could not be opened.');
+          setOpening(false);
+          return;
+        }
+        setIsUnlocked(true);
+        setSessionReady(true);
+        setOpening(false);
+        return;
+      }
+      const cashierReady = Boolean(readBillingToken()) && billingService.isAuthenticated();
+      if (!cancelled) {
+        setIsUnlocked(cashierReady);
+        setSessionReady(cashierReady);
+        setOpening(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser, isRestoring]);
 
   const handleLockPos = () => {
     billingService.clearStaffSession();
+    setSessionReady(false);
+    if (currentUser) {
+      navigate('/');
+      return;
+    }
     setIsUnlocked(false);
     showToast('Register Locked', 'info');
   };
@@ -39,6 +79,7 @@ export function BillingWorkspacePage() {
 
   // Catalog State
   const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState('');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
 
@@ -71,11 +112,13 @@ export function BillingWorkspacePage() {
   // Load catalog and summary
   const refreshData = useCallback(async () => {
     setCatalogLoading(true);
+    setCatalogError('');
     try {
       await billingService.refreshRegister();
-      const items = await billingService.searchProducts();
-      setProducts(items);
-      setCategories(await Promise.resolve(billingService.listCategories()));
+      const catalog = await billingService.fetchRegisterCatalog();
+      setProducts(catalog.products);
+      setCategories(catalog.categories);
+      setCatalogError(catalog.error || '');
       setHeldBills(await Promise.resolve(billingService.getHeldBills()));
       setTodaySummary(await Promise.resolve(billingService.getTodaySummary()));
     } finally {
@@ -84,8 +127,8 @@ export function BillingWorkspacePage() {
   }, []);
 
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    if (sessionReady) refreshData();
+  }, [sessionReady, refreshData]);
 
   // Dynamic totals calculation
   const totals = billingService.calculateTotals({
@@ -307,17 +350,40 @@ export function BillingWorkspacePage() {
   };
 
   const handleLogout = async () => {
+    const wasAdmin = Boolean(currentUser);
     billingService.clearStaffSession();
     setIsUnlocked(false);
+    setSessionReady(false);
     await logout();
     showToast('Signed out. The admin portal will ask for the password.', 'info');
+    if (wasAdmin) navigate('/login', { replace: true });
   };
+
+  if (isRestoring || opening) {
+    return <SessionGate message="Opening the register…" />;
+  }
+
+  if (openError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-[#F6F5F2] px-6 text-center text-charcoal-700">
+        <p className="text-sm font-semibold">{openError}</p>
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="rounded-xl bg-charcoal-900 px-4 py-2 text-xs font-semibold text-white"
+        >
+          Back to admin portal
+        </button>
+      </div>
+    );
+  }
 
   if (!isUnlocked) {
     return (
       <BillingAccessPage
         onPinSuccess={() => {
           setIsUnlocked(true);
+          setSessionReady(true);
         }}
       />
     );
@@ -349,6 +415,8 @@ export function BillingWorkspacePage() {
               onAddToCart={handleAddToCart}
               categories={categories}
               loading={catalogLoading}
+              error={catalogError}
+              onRetry={refreshData}
             />
           </div>
 

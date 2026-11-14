@@ -18,7 +18,7 @@ import {
 
 export function BillingAccessPage({ onPinSuccess }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { currentUser, isRestoring, logout } = useAuth();
   const { showToast } = useToast();
 
   const [pinDigits, setPinDigits] = useState(['', '', '', '', '', '']);
@@ -35,6 +35,12 @@ export function BillingAccessPage({ onPinSuccess }) {
       inputRefs.current[0].focus();
     }
   }, []);
+
+  // The standalone PIN page is for the counter. An admin already signed in goes straight to the register.
+  useEffect(() => {
+    if (onPinSuccess || isRestoring || !currentUser) return;
+    navigate('/billing', { replace: true });
+  }, [onPinSuccess, isRestoring, currentUser, navigate]);
 
   const fullPin = pinDigits.join('');
 
@@ -159,7 +165,7 @@ export function BillingAccessPage({ onPinSuccess }) {
     verifyPinCode('123456');
   };
 
-  if (isLoading || isSuccess) {
+  if (isLoading || isSuccess || (!onPinSuccess && (isRestoring || currentUser))) {
     return <SessionGate message="Opening the register…" />;
   }
 

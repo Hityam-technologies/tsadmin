@@ -9,6 +9,8 @@ export function ProductCatalog({
   onAddToCart,
   categories = [],
   loading = false,
+  error = '',
+  onRetry,
 }) {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -139,6 +141,21 @@ export function ProductCatalog({
             {Array.from({ length: 8 }).map((_, index) => (
               <Skeleton key={index} className="aspect-[3/4] sm:aspect-[4/5] rounded-2xl" />
             ))}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-48 text-center p-6 bg-sand-50/60 rounded-2xl border border-dashed border-sand-300">
+            <AlertCircle className="w-8 h-8 text-charcoal-400 mb-2" />
+            <p className="text-sm font-bold text-charcoal-800">The saree list could not be loaded</p>
+            <p className="text-xs text-charcoal-500 mt-1 max-w-sm">{error}</p>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="mt-3 px-3.5 py-1.5 rounded-xl bg-charcoal-900 hover:bg-black text-white text-xs font-semibold cursor-pointer"
+              >
+                Try again
+              </button>
+            )}
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-center p-6 bg-sand-50/60 rounded-2xl border border-dashed border-sand-300">
