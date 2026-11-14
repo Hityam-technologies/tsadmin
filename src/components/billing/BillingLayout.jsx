@@ -10,6 +10,7 @@ import {
   CalendarCheck2,
   ShoppingBag,
   Lock,
+  LayoutDashboard,
 } from 'lucide-react';
 import { billingService } from '../../services/billingService';
 
@@ -17,7 +18,7 @@ export function BillingLayout({
   activeTab,
   setActiveTab,
   heldBillsCount: _heldBillsCount = 0,
-  currentUser: _currentUser,
+  currentUser,
   onLogout,
   onLockPos,
   todaySummary: _todaySummary,
@@ -104,6 +105,18 @@ export function BillingLayout({
 
               {/* Right: Clock & Action Icon Buttons */}
               <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+                {currentUser && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/', { replace: true })}
+                    title="Admin portal"
+                    className="flex items-center gap-1.5 h-9.5 sm:h-10 px-3 rounded-xl border border-sand-200 bg-white hover:bg-sand-50 text-charcoal-800 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <LayoutDashboard className="w-4 h-4 text-gold-700" />
+                    <span>Admin portal</span>
+                  </button>
+                )}
+
                 {/* Real-time Clock and Date (Stacked up and down like Admin Portal) */}
                 <div className="hidden sm:flex flex-col text-right leading-tight pr-3 border-r border-sand-200">
                   <div className="flex items-center justify-end gap-1.5 text-xs sm:text-sm font-extrabold text-charcoal-900 tracking-tight font-mono">

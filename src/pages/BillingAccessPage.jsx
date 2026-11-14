@@ -113,7 +113,7 @@ export function BillingAccessPage({ onPinSuccess }) {
           if (onPinSuccess) {
             onPinSuccess(res.staff);
           } else {
-            navigate('/billing');
+            navigate('/billing', { replace: true });
           }
         }, 350);
         return;

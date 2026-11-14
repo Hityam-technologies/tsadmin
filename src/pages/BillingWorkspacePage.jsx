@@ -109,6 +109,40 @@ export function BillingWorkspacePage() {
   // Day summary ticker
   const [todaySummary, setTodaySummary] = useState(null);
 
+  const emptyCustomer = {
+    name: 'Walk-in Guest',
+    phone: '',
+    email: '',
+    city: 'Hyderabad',
+    gstin: '',
+    isWalkIn: true,
+  };
+
+  // Billing starts a new round. Back stays on the register and clears the bill.
+  useEffect(() => {
+    if (!sessionReady) return undefined;
+    const startFresh = () => {
+      setActiveTab('pos');
+      setCartItems([]);
+      setSelectedServices([]);
+      setCustomer(emptyCustomer);
+      setIsPaymentOpen(false);
+      setIsInvoiceOpen(false);
+      setIsWhatsAppOpen(false);
+      setIsNewCustomerOpen(false);
+      setIsDayClosingOpen(false);
+      setActiveInvoice(null);
+    };
+    window.history.replaceState({ billing: true }, '', '/billing');
+    window.history.pushState({ billing: true }, '', '/billing');
+    const onBack = () => {
+      window.history.pushState({ billing: true }, '', '/billing');
+      startFresh();
+    };
+    window.addEventListener('popstate', onBack);
+    return () => window.removeEventListener('popstate', onBack);
+  }, [sessionReady]);
+
   // Load catalog and summary
   const refreshData = useCallback(async () => {
     setCatalogLoading(true);

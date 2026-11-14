@@ -187,6 +187,7 @@ export function AdminLayout({ children }) {
                     key={item.path}
                     to={item.path}
                     end={item.path === '/'}
+                    replace={item.path === '/billing'}
                     className={({ isActive }) =>
                       `flex items-center px-3.5 py-3 rounded-2xl text-sm transition-all ${
                         isActive
@@ -376,6 +377,7 @@ export function AdminLayout({ children }) {
                         key={item.path}
                         to={item.path}
                         end={item.path === '/'}
+                        replace={item.path === '/billing'}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={({ isActive }) =>
                           `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold ${
