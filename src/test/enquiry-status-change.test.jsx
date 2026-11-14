@@ -1,36 +1,74 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const apiRequest = vi.fn();
+
+vi.mock('../services/apiClient', () => ({
+  apiRequest: (...args) => apiRequest(...args),
+}));
+
 import { enquiryService } from '../services/enquiryService';
 
 describe('Enquiry Management & Status Lifecycle', () => {
-  it('updates an enquiry status from new to contacted to confirmed', async () => {
-    // 1. Advance to contacted
+  beforeEach(() => {
+    apiRequest.mockReset();
+  });
+
+  it('updates an enquiry status through the API', async () => {
+    apiRequest
+      .mockResolvedValueOnce({
+        success: true,
+        data: { id: 'ENQ-2041', status: 'contacted', notes: [{ text: 'Status changed to contacted' }] },
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 'ENQ-2041',
+          status: 'confirmed',
+          notes: [
+            { text: 'Status changed to contacted' },
+            { text: 'Status changed to confirmed' },
+          ],
+        },
+      });
+
     const res1 = await enquiryService.updateStatus('ENQ-2041', 'contacted');
     expect(res1.success).toBe(true);
     expect(res1.data.status).toBe('contacted');
 
-    // 2. Advance to confirmed
     const res2 = await enquiryService.updateStatus('ENQ-2041', 'confirmed');
     expect(res2.success).toBe(true);
     expect(res2.data.status).toBe('confirmed');
-
-    // Verify auto-notes logged in timeline
-    const notes = res2.data.notes;
-    expect(notes.length).toBeGreaterThan(0);
-    expect(notes[notes.length - 1].text).toContain('Status changed');
+    expect(res2.data.notes[res2.data.notes.length - 1].text).toContain('Status changed');
   });
 
-  it('appends an internal stylist note to an enquiry', async () => {
+  it('appends an internal note through the API', async () => {
+    apiRequest.mockResolvedValue({
+      success: true,
+      data: {
+        text: 'Client scheduled store viewing on Friday 4 PM',
+        author: 'Meenakshi Iyer',
+      },
+    });
+
     const res = await enquiryService.addNote(
       'ENQ-2041',
       'Client scheduled store viewing on Friday 4 PM',
-      'Meenakshi Iyer'
+      'Meenakshi Iyer',
     );
     expect(res.success).toBe(true);
     expect(res.data.text).toBe('Client scheduled store viewing on Friday 4 PM');
     expect(res.data.author).toBe('Meenakshi Iyer');
   });
 
-  it('exports customer enquiries to CSV with required columns', async () => {
+  it('exports customer enquiries to CSV through the API', async () => {
+    apiRequest.mockResolvedValue({
+      success: true,
+      data: {
+        csv: 'ID,Customer Name,Phone,Email\nENQ-2041,Asha,+91,asha@example.com',
+        filename: 'enquiries.csv',
+      },
+    });
+
     const res = await enquiryService.exportCsv();
     expect(res.success).toBe(true);
     expect(res.data.csv).toContain('ID,Customer Name,Phone,Email');
@@ -38,4 +76,3 @@ describe('Enquiry Management & Status Lifecycle', () => {
     expect(res.data.filename).toContain('.csv');
   });
 });
-

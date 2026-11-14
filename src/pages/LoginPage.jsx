@@ -6,7 +6,6 @@ import { BrandGradientBackground } from '../components/common/BrandGradientBackg
 import homeLogo from '../assets/homeLogo.png';
 import { Mail, Lock, ShieldCheck, ArrowRight, Sparkles, Store } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
-import { USE_MOCK } from '../services/apiClient';
 import { billingService } from '../services/billingService';
 
 export function LoginPage() {
@@ -15,8 +14,8 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [email, setEmail] = useState(USE_MOCK ? 'admin@tripuraa.in' : '');
-  const [password, setPassword] = useState(USE_MOCK ? 'Password@123' : '');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -155,26 +154,6 @@ export function LoginPage() {
             </div>
           </form>
 
-          {USE_MOCK ? (
-          <div className="mt-6 pt-6 border-t border-sand-200">
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-charcoal-400 text-center mb-3">
-              One-Click Admin Credentials
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('admin@tripuraa.in');
-                setPassword('Password@123');
-                setError('');
-                showToast('Loaded Admin credentials', 'info');
-              }}
-              className="w-full py-2.5 px-4 rounded-xl border border-gold-300 bg-gold-50/60 hover:bg-gold-100 text-xs font-bold text-gold-900 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-            >
-              <ShieldCheck className="w-4 h-4 text-gold-600" />
-              <span>Fill Admin: admin@tripuraa.in / Password@123</span>
-            </button>
-          </div>
-          ) : null}
         </div>
 
         <div className="mt-4 text-center">

@@ -1,49 +1,108 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const apiRequest = vi.fn();
+
+vi.mock('../services/apiClient', () => ({
+  apiRequest: (...args) => apiRequest(...args),
+}));
+
 import { sareeService } from '../services/sareeService';
 
 describe('Table Filters & Pagination Logic', () => {
-  it('filters sarees by search query in title or weave', async () => {
+  beforeEach(() => {
+    apiRequest.mockReset();
+  });
+
+  it('requests sarees with a search query', async () => {
+    apiRequest.mockResolvedValue({
+      success: true,
+      data: {
+        items: [
+          {
+            title: 'Swarna Kanchipuram',
+            weave: 'Kanchipuram Handloom',
+            origin: 'Kanchipuram, Tamil Nadu',
+            category: 'sarees',
+            numericPrice: 28500,
+          },
+        ],
+        total: 1,
+        page: 1,
+        limit: 8,
+        totalPages: 1,
+      },
+    });
+
     const res = await sareeService.getSarees({ search: 'Kanchipuram' });
     expect(res.success).toBe(true);
-    expect(res.data.items.length).toBeGreaterThan(0);
-    res.data.items.forEach((item) => {
-      const match =
-        item.title.toLowerCase().includes('kanchipuram') ||
-        item.weave.toLowerCase().includes('kanchipuram') ||
-        item.origin.toLowerCase().includes('kanchipuram');
-      expect(match).toBe(true);
-    });
+    expect(apiRequest).toHaveBeenCalledWith('/admin/sarees', expect.objectContaining({
+      method: 'GET',
+      query: expect.objectContaining({ search: 'Kanchipuram' }),
+    }));
+    expect(res.data.items[0].title.toLowerCase()).toContain('kanchipuram');
   });
 
-  it('filters sarees strictly by category', async () => {
+  it('requests sarees filtered by category', async () => {
+    apiRequest.mockResolvedValue({
+      success: true,
+      data: {
+        items: [{ title: 'Bridal Silk', category: 'bridal', numericPrice: 40000 }],
+        total: 1,
+        page: 1,
+        limit: 8,
+        totalPages: 1,
+      },
+    });
+
     const res = await sareeService.getSarees({ category: 'bridal' });
     expect(res.success).toBe(true);
-    expect(res.data.items.length).toBeGreaterThan(0);
-    res.data.items.forEach((item) => {
-      expect(item.category).toBe('bridal');
-    });
+    expect(apiRequest).toHaveBeenCalledWith('/admin/sarees', expect.objectContaining({
+      query: expect.objectContaining({ category: 'bridal' }),
+    }));
+    res.data.items.forEach((item) => expect(item.category).toBe('bridal'));
   });
 
-  it('sorts sarees by price ascending correctly', async () => {
+  it('requests price ascending sort', async () => {
+    apiRequest.mockResolvedValue({
+      success: true,
+      data: {
+        items: [
+          { title: 'A', numericPrice: 20000 },
+          { title: 'B', numericPrice: 30000 },
+        ],
+        total: 2,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      },
+    });
+
     const res = await sareeService.getSarees({ sortBy: 'price_asc', limit: 20 });
     expect(res.success).toBe(true);
-    const items = res.data.items;
-    for (let i = 0; i < items.length - 1; i++) {
-      expect(items[i].numericPrice).toBeLessThanOrEqual(items[i + 1].numericPrice);
-    }
+    expect(apiRequest).toHaveBeenCalledWith('/admin/sarees', expect.objectContaining({
+      query: expect.objectContaining({ sortBy: 'price_asc', limit: 20 }),
+    }));
+    expect(res.data.items[0].numericPrice).toBeLessThanOrEqual(res.data.items[1].numericPrice);
   });
 
-  it('paginates records properly with correct total and page slices', async () => {
+  it('requests paginated records', async () => {
+    apiRequest.mockResolvedValue({
+      success: true,
+      data: {
+        items: [{ id: '1' }, { id: '2' }, { id: '3' }],
+        total: 10,
+        page: 1,
+        limit: 3,
+        totalPages: 4,
+      },
+    });
+
     const page1Res = await sareeService.getSarees({ page: 1, limit: 3 });
     expect(page1Res.success).toBe(true);
     expect(page1Res.data.items.length).toBe(3);
     expect(page1Res.data.totalPages).toBeGreaterThanOrEqual(1);
-
-    const page2Res = await sareeService.getSarees({ page: 2, limit: 3 });
-    expect(page2Res.success).toBe(true);
-    expect(page2Res.data.items.length).toBe(3);
-    // Page 1 and Page 2 should have different first items
-    expect(page1Res.data.items[0].id).not.toBe(page2Res.data.items[0].id);
+    expect(apiRequest).toHaveBeenCalledWith('/admin/sarees', expect.objectContaining({
+      query: expect.objectContaining({ page: 1, limit: 3 }),
+    }));
   });
 });
-

@@ -91,7 +91,15 @@ export function ContentStudioPage() {
         if (res.success) setFaqs(res.data);
       } else if (activeTab === 'legal') {
         const res = await contentService.getLegal(legalType);
-        if (res.success) setLegalSections(res.data);
+        if (res.success) {
+          const payload = res.data;
+          const sections = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload?.sections)
+              ? payload.sections
+              : [];
+          setLegalSections(sections);
+        }
       }
     }
     loadData();

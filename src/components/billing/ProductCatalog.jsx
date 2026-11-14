@@ -181,11 +181,12 @@ export function ProductCatalog({
               const cartQty = getCartQuantity(product.id);
               const isOutOfStock = stock === 0;
               const isAtMaxStock = cartQty >= stock;
-              const fallbackImage = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=900&auto=format&fit=crop&q=80';
               const image =
-                (product.images && product.images[0]) ||
+                (typeof product.images?.[0] === 'string'
+                  ? product.images[0]
+                  : product.images?.[0]?.url) ||
                 product.image ||
-                fallbackImage;
+                '';
 
               return (
                 <div
@@ -197,16 +198,19 @@ export function ProductCatalog({
                   }`}
                 >
                   {/* Full Background Saree Image */}
-                  <img
-                    src={image}
-                    alt={product.title}
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = fallbackImage;
-                    }}
-                    className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                  />
+                  {image ? (
+                    <img
+                      src={image}
+                      alt={product.title}
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-sand-200" />
+                  )}
 
                   {/* Top Bar Badges (Floating on Image) */}
                   <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-20 pointer-events-none">

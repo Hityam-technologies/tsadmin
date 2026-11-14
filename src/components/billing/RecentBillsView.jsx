@@ -456,8 +456,12 @@ export function RecentBillsView({
                 ) : (
                   soldOutItems.map((saree) => {
                     const isRestocked = restockedIds.includes(saree.id);
-                    const fallbackImg = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=900&auto=format&fit=crop&q=80';
-                    const image = (saree.images && saree.images[0]) || saree.image || fallbackImg;
+                    const image =
+                      (typeof saree.images?.[0] === 'string'
+                        ? saree.images[0]
+                        : saree.images?.[0]?.url) ||
+                      saree.image ||
+                      '';
 
                     return (
                       <tr
@@ -467,15 +471,18 @@ export function RecentBillsView({
                         {/* Saree Thumbnail & Info */}
                         <td className="p-3">
                           <div className="flex items-center gap-3">
-                            <img
-                              src={image}
-                              alt={saree.title}
-                              onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.src = fallbackImg;
-                              }}
-                              className="w-12 h-15 rounded-lg object-cover object-top border border-sand-200 flex-shrink-0 shadow-2xs"
-                            />
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={saree.title}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                className="w-12 h-15 rounded-lg object-cover object-top border border-sand-200 flex-shrink-0 shadow-2xs"
+                              />
+                            ) : (
+                              <div className="w-12 h-15 rounded-lg bg-sand-200 border border-sand-200 flex-shrink-0" />
+                            )}
                             <div>
                               <div className="flex items-center gap-1.5 mb-0.5">
                                 <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-charcoal-900 text-white">

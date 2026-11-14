@@ -1,4 +1,10 @@
-import { apiRequest, tokenStore, db, recordAuditLog, USE_MOCK, rememberAdmin, closeAdminSession, openAdminSession } from './apiClient';
+import {
+  apiRequest,
+  tokenStore,
+  rememberAdmin,
+  closeAdminSession,
+  openAdminSession,
+} from './apiClient';
 
 export const authService = {
   /**
@@ -6,51 +12,10 @@ export const authService = {
    * API: POST /api/v1/admin/auth/login
    */
   async login(email, password) {
-    const result = await apiRequest(
-      '/api/v1/admin/auth/login',
-      {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      },
-      async () => {
-        const found = db.users.find(
-          (u) => u.email.toLowerCase() === email.trim().toLowerCase()
-        );
-
-        if (!found || found.role === 'customer') {
-          // If not in seeded users, allow default admin credentials
-          if (email.trim().toLowerCase() === 'admin@tripuraa.in' && password === 'Password@123') {
-            const adminUser = {
-              id: 'adm-01',
-              name: 'Maharani Gayatri',
-              email: 'admin@tripuraa.in',
-              role: 'admin',
-              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-            };
-            const token = `ts_jwt_${Date.now()}`;
-            tokenStore.setToken(token);
-            tokenStore.setUser(adminUser);
-            recordAuditLog('LOGIN', 'auth', `Admin logged in as ${adminUser.name}`);
-            return { token, user: adminUser };
-          }
-          throw new Error('Invalid credentials. Sign in with admin@tripuraa.in / Password@123');
-        }
-
-        if (found.role !== 'admin') {
-          throw new Error('Unauthorized. Only administrative accounts can access this panel.');
-        }
-
-        if (found.isBlocked) {
-          throw new Error('This administrative account has been suspended.');
-        }
-
-        const token = `ts_jwt_${Date.now()}_${found.id}`;
-        tokenStore.setToken(token);
-        tokenStore.setUser(found);
-        recordAuditLog('LOGIN', 'auth', `Admin ${found.name} authenticated successfully`);
-        return { token, user: found };
-      }
-    );
+    const result = await apiRequest('/api/v1/admin/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
     if (result.success && result.data?.token) {
       openAdminSession();
       tokenStore.setToken(result.data.token);
@@ -64,51 +29,26 @@ export const authService = {
    * API: POST /api/v1/admin/auth/forgot-password
    */
   async forgotPassword(email) {
-    return apiRequest(
-      '/api/v1/admin/auth/forgot-password',
-      {
-        method: 'POST',
-        body: JSON.stringify({ email }),
-      },
-      async () => {
-        recordAuditLog('PASSWORD_RESET_REQUEST', 'auth', `Password reset dispatched for ${email}`);
-        return { message: `Password reset verification link has been sent to ${email}` };
-      }
-    );
+    return apiRequest('/api/v1/admin/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
   },
 
   async changePassword(currentPassword, newPassword) {
-    return apiRequest(
-      '/api/v1/admin/auth/change-password',
-      {
-        method: 'PUT',
-        body: JSON.stringify({ currentPassword, newPassword }),
-      },
-      async () => ({ message: 'Password updated in the local preview.' })
-    );
+    return apiRequest('/api/v1/admin/auth/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
   },
 
   /**
    * Logout
    */
   async logout() {
-    const user = tokenStore.getUser();
-    const token = tokenStore.getToken();
-    if (USE_MOCK && user) {
-      recordAuditLog('LOGOUT', 'auth', `${user.name} logged out`);
-    }
-    closeAdminSession();
-    if (!USE_MOCK) {
-      const base = import.meta.env.VITE_API_BASE_URL || '';
-      await fetch(`${base}/api/v1/admin/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      }).catch(() => null);
+    try {
+      await apiRequest('/api/v1/admin/auth/logout', { method: 'POST' });
+    } finally {
       closeAdminSession();
     }
     return true;

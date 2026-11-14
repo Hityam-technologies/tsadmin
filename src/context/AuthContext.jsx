@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { restoreAdminSession, setSessionLostHandler, syncSessionFromStorage, USE_MOCK } from '../services/apiClient';
+import {
+  restoreAdminSession,
+  setSessionLostHandler,
+  syncSessionFromStorage,
+} from '../services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -9,7 +13,7 @@ export function AuthProvider({ children }) {
 
   const [isLoading, setIsLoading] = useState(false);
   // A saved sign-in is shown at once. The cookie refresh runs behind it.
-  const [isRestoring, setIsRestoring] = useState(!USE_MOCK && !authService.getCurrentUser());
+  const [isRestoring, setIsRestoring] = useState(!authService.getCurrentUser());
 
   useEffect(() => {
     let live = true;
