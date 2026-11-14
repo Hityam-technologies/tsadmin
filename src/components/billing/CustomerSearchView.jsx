@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { billingService } from '../../services/billingService';
 import { formatINR } from '../../lib/utils';
+import { TableSkeleton } from '../common/Skeleton';
 import {
   Users,
   Search,
@@ -18,13 +19,19 @@ export function CustomerSearchView({
   onSelectCustomer,
   onOpenNewCustomer,
 }) {
+  const [loading, setLoading] = useState(true);
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'grid'
 
   const loadCustomers = useCallback(async () => {
-    const list = await billingService.getCustomers(search);
-    setCustomers(list);
+    setLoading(true);
+    try {
+      const list = await billingService.getCustomers(search);
+      setCustomers(list || []);
+    } finally {
+      setLoading(false);
+    }
   }, [search]);
 
   useEffect(() => {
@@ -108,7 +115,11 @@ export function CustomerSearchView({
       </div>
 
       {/* Main Content Area */}
-      {customers.length === 0 ? (
+      {loading ? (
+        <div className="flex-1 min-h-0 overflow-auto border border-sand-200 rounded-xl bg-white">
+          <TableSkeleton rows={8} cols={4} />
+        </div>
+      ) : customers.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center border border-sand-200 rounded-xl bg-white">
           <div className="w-12 h-12 rounded-full bg-sand-100 flex items-center justify-center text-charcoal-400 mb-3">
             <Users className="w-6 h-6" />

@@ -57,8 +57,9 @@ export function AuthProvider({ children }) {
     return authService.forgotPassword(email);
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    setCurrentUser(null);
+    await authService.logout();
     setCurrentUser(null);
   };
 

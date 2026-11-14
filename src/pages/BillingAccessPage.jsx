@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { BrandGradientBackground } from '../components/common/BrandGradientBackground';
 import homeLogo from '../assets/homeLogo.png';
 import { billingService } from '../services/billingService';
+import { useAuth } from '../context/AuthContext';
+import { SessionGate } from '../components/auth/SessionGate';
 import { useToast } from '../context/ToastContext';
 import {
   Lock,
@@ -16,6 +18,7 @@ import {
 
 export function BillingAccessPage({ onPinSuccess }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const { showToast } = useToast();
 
   const [pinDigits, setPinDigits] = useState(['', '', '', '', '', '']);
@@ -107,20 +110,19 @@ export function BillingAccessPage({ onPinSuccess }) {
             navigate('/billing');
           }
         }, 350);
-      } else {
-        setError(res.error || 'Invalid 6-digit PIN. Please try again.');
-        setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 500);
-        setPinDigits(['', '', '', '', '', '']);
-        if (inputRefs.current[0]) {
-          inputRefs.current[0].focus();
-        }
+        return;
+      }
+      setError(res.error || 'Invalid 6-digit PIN. Please try again.');
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      setPinDigits(['', '', '', '', '', '']);
+      if (inputRefs.current[0]) {
+        inputRefs.current[0].focus();
       }
     } catch {
       setError('Verification service unavailable. Please retry.');
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   // On-screen Numpad click handler (tablet / touchscreen support)
@@ -156,6 +158,10 @@ export function BillingAccessPage({ onPinSuccess }) {
     setPinDigits(demo);
     verifyPinCode('123456');
   };
+
+  if (isLoading || isSuccess) {
+    return <SessionGate message="Opening the register…" />;
+  }
 
   return (
     <BrandGradientBackground idPrefix="billing_entry_">
@@ -317,7 +323,11 @@ export function BillingAccessPage({ onPinSuccess }) {
           <div className="mt-5 text-center">
             <button
               type="button"
-              onClick={() => navigate('/login')}
+              onClick={async () => {
+                billingService.clearStaffSession();
+                await logout();
+                navigate('/login', { replace: true });
+              }}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-charcoal-500 hover:text-charcoal-900 transition-colors group cursor-pointer"
             >
               <Lock className="w-3.5 h-3.5 text-gold-600 group-hover:scale-110 transition-transform" />

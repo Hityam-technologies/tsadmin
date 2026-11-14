@@ -61,10 +61,10 @@ export function AdminLayout({ children }) {
     return () => clearInterval(interval);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    showToast('Signed out from Tripuraa Sangrahah', 'info');
-    navigate('/login');
+  const handleLogout = async () => {
+    await logout();
+    showToast('Signed out. Sign in again with your password.', 'info');
+    navigate('/login', { replace: true });
   };
 
   // Resolve current active page title for the search pill tag

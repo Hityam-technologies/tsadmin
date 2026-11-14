@@ -1,4 +1,4 @@
-import { apiRequest, tokenStore, db, recordAuditLog, USE_MOCK, rememberAdmin } from './apiClient';
+import { apiRequest, tokenStore, db, recordAuditLog, USE_MOCK, rememberAdmin, closeAdminSession, openAdminSession } from './apiClient';
 
 export const authService = {
   /**
@@ -52,6 +52,7 @@ export const authService = {
       }
     );
     if (result.success && result.data?.token) {
+      openAdminSession();
       tokenStore.setToken(result.data.token);
       rememberAdmin(result.data.user);
     }
@@ -90,15 +91,26 @@ export const authService = {
   /**
    * Logout
    */
-  logout() {
+  async logout() {
     const user = tokenStore.getUser();
+    const token = tokenStore.getToken();
     if (USE_MOCK && user) {
       recordAuditLog('LOGOUT', 'auth', `${user.name} logged out`);
     }
-    if (!USE_MOCK && tokenStore.getToken()) {
-      apiRequest('/api/v1/admin/auth/logout', { method: 'POST' }, async () => ({})).catch(() => null);
+    closeAdminSession();
+    if (!USE_MOCK) {
+      const base = import.meta.env.VITE_API_BASE_URL || '';
+      await fetch(`${base}/api/v1/admin/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }).catch(() => null);
+      closeAdminSession();
     }
-    tokenStore.clear();
     return true;
   },
 

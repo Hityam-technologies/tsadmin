@@ -187,6 +187,16 @@ export async function apiRequest(endpoint, options = {}, mockHandler) {
 }
 
 let refreshFlight = null;
+let sessionClosed = false;
+
+export function closeAdminSession() {
+  sessionClosed = true;
+  tokenStore.clear();
+}
+
+export function openAdminSession() {
+  sessionClosed = false;
+}
 
 function buildUrl(endpoint, query) {
   const path = endpoint.startsWith('/api/v1')
@@ -212,23 +222,24 @@ async function refreshAdminSession() {
     })
       .then(async (response) => {
         const json = await response.json().catch(() => ({}));
-        if (!response.ok || !json?.data?.token) {
+        if (sessionClosed || !response.ok || !json?.data?.token) {
           // A reload still has the saved sign-in. Only wipe it when there was none.
-          if (!tokenAtStart && tokenStore.getToken() === tokenAtStart) {
+          if (sessionClosed || (!tokenAtStart && tokenStore.getToken() === tokenAtStart)) {
             tokenStore.clear();
             sessionLostHandler?.();
           }
-          return tokenStore.getUser();
+          return sessionClosed ? null : tokenStore.getUser();
         }
+        if (sessionClosed) return null;
         tokenStore.setToken(json.data.token);
         return rememberAdmin(json.data.user);
       })
       .catch(() => {
-        if (!tokenAtStart && tokenStore.getToken() === tokenAtStart) {
+        if (sessionClosed || (!tokenAtStart && tokenStore.getToken() === tokenAtStart)) {
           tokenStore.clear();
           sessionLostHandler?.();
         }
-        return tokenStore.getUser();
+        return sessionClosed ? null : tokenStore.getUser();
       })
       .finally(() => {
         refreshFlight = null;
@@ -256,7 +267,14 @@ async function realRequest(endpoint, options = {}, retried = false) {
     return { success: false, error: { code: 'NETWORK', message: 'the backend API is unreachable.' } };
   }
 
-  if (response.status === 401 && !retried && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+  if (
+    response.status === 401
+    && !retried
+    && !sessionClosed
+    && !endpoint.includes('/auth/login')
+    && !endpoint.includes('/auth/logout')
+    && !endpoint.includes('/auth/refresh')
+  ) {
     const tokenBeforeRefresh = tokenStore.getToken();
     const user = await refreshAdminSession();
     if (user && tokenStore.getToken() && tokenStore.getToken() !== tokenBeforeRefresh) {

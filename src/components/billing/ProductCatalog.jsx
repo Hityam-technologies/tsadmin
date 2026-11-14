@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Check, Plus, AlertCircle } from 'lucide-react';
 import { formatINR } from '../../lib/utils';
+import { Skeleton } from '../common/Skeleton';
 
 export function ProductCatalog({
   products = [],
   cartItems = [],
   onAddToCart,
   categories = [],
+  loading = false,
 }) {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -132,7 +134,13 @@ export function ProductCatalog({
         className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pr-1.5 billing-scrollbar"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
       >
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 sm:gap-4 pb-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="aspect-[3/4] sm:aspect-[4/5] rounded-2xl" />
+            ))}
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-center p-6 bg-sand-50/60 rounded-2xl border border-dashed border-sand-300">
             <AlertCircle className="w-8 h-8 text-charcoal-400 mb-2" />
             <p className="text-sm font-bold text-charcoal-800">No Sarees Found</p>

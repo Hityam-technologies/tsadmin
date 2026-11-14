@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { billingService } from '../../services/billingService';
 import { formatINR } from '../../lib/utils';
+import { TableSkeleton } from '../common/Skeleton';
 import {
   Search,
   Share2,
@@ -24,6 +25,7 @@ export function RecentBillsView({
   // =========================================================================
   // SECTION 1: INVOICES AUDIT LOG STATE
   // =========================================================================
+  const [loadingInvoices, setLoadingInvoices] = useState(true);
   const [invoices, setInvoices] = useState([]);
   const [search, setSearch] = useState('');
   const [paymentMode, setPaymentMode] = useState('all');
@@ -42,16 +44,21 @@ export function RecentBillsView({
 
   // Load Invoices
   const loadInvoices = useCallback(async () => {
-    const res = await billingService.getInvoices({
-      search,
-      paymentMode,
-      status,
-      page,
-      limit: 10,
-    });
-    setInvoices(res.items);
-    setTotal(res.total);
-    setTotalPages(res.totalPages);
+    setLoadingInvoices(true);
+    try {
+      const res = await billingService.getInvoices({
+        search,
+        paymentMode,
+        status,
+        page,
+        limit: 10,
+      });
+      setInvoices(res.items || []);
+      setTotal(res.total || 0);
+      setTotalPages(res.totalPages || 1);
+    } finally {
+      setLoadingInvoices(false);
+    }
   }, [search, paymentMode, status, page]);
 
   // Load Sold Out Items
@@ -204,7 +211,10 @@ export function RecentBillsView({
           </div>
 
           {/* Invoices Table */}
-          <div className="flex-1 min-h-0 overflow-auto border border-sand-200 rounded-xl">
+          <div className="flex-1 min-h-0 overflow-auto border border-sand-200 rounded-xl bg-white">
+            {loadingInvoices ? (
+              <TableSkeleton rows={8} cols={6} />
+            ) : (
             <table className="w-full text-left text-xs">
               <thead className="bg-sand-100/80 text-charcoal-700 font-bold text-xs uppercase tracking-wider sticky top-0 z-10">
                 <tr>
@@ -335,6 +345,7 @@ export function RecentBillsView({
                 )}
               </tbody>
             </table>
+            )}
           </div>
 
           {/* Pagination Controls */}

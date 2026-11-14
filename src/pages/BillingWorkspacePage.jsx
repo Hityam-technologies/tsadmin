@@ -16,20 +16,13 @@ import { DayClosingModal } from '../components/billing/DayClosingModal';
 import { NewCustomerModal } from '../components/billing/NewCustomerModal';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { BillingAccessPage } from './BillingAccessPage';
-import { USE_MOCK } from '../services/apiClient';
 
 export function BillingWorkspacePage() {
-  const { currentUser, login } = useAuth();
+  const { currentUser, logout } = useAuth();
   const { showToast } = useToast();
 
   const [isUnlocked, setIsUnlocked] = useState(() => billingService.isAuthenticated());
 
-  // Auto-establish session if accessed directly without previous login
-  useEffect(() => {
-    if (!currentUser && USE_MOCK && login) {
-      login('admin@tripuraa.in', 'Password@123');
-    }
-  }, [currentUser, login]);
 
   // Keep state synchronized
   useEffect(() => {
@@ -45,6 +38,7 @@ export function BillingWorkspacePage() {
   const [activeTab, setActiveTab] = useState('pos'); // 'pos' | 'recent' | 'held' | 'customers' | 'reports' | 'close'
 
   // Catalog State
+  const [catalogLoading, setCatalogLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
 
@@ -76,12 +70,17 @@ export function BillingWorkspacePage() {
 
   // Load catalog and summary
   const refreshData = useCallback(async () => {
-    await billingService.refreshRegister();
-    const items = await billingService.searchProducts();
-    setProducts(items);
-    setCategories(await Promise.resolve(billingService.listCategories()));
-    setHeldBills(await Promise.resolve(billingService.getHeldBills()));
-    setTodaySummary(await Promise.resolve(billingService.getTodaySummary()));
+    setCatalogLoading(true);
+    try {
+      await billingService.refreshRegister();
+      const items = await billingService.searchProducts();
+      setProducts(items);
+      setCategories(await Promise.resolve(billingService.listCategories()));
+      setHeldBills(await Promise.resolve(billingService.getHeldBills()));
+      setTodaySummary(await Promise.resolve(billingService.getTodaySummary()));
+    } finally {
+      setCatalogLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -307,10 +306,11 @@ export function BillingWorkspacePage() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     billingService.clearStaffSession();
     setIsUnlocked(false);
-    showToast('Register locked. Enter the billing PIN to continue.', 'info');
+    await logout();
+    showToast('Signed out. The admin portal will ask for the password.', 'info');
   };
 
   if (!isUnlocked) {
@@ -348,6 +348,7 @@ export function BillingWorkspacePage() {
               cartItems={cartItems}
               onAddToCart={handleAddToCart}
               categories={categories}
+              loading={catalogLoading}
             />
           </div>
 
