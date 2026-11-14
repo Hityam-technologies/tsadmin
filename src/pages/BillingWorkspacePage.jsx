@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, ShoppingBag } from 'lucide-react';
 import { billingService } from '../services/billingService';
 import { readBillingToken } from '../services/billingApi';
 import { useAuth } from '../context/AuthContext';
@@ -76,6 +77,8 @@ export function BillingWorkspacePage() {
   };
 
   const [activeTab, setActiveTab] = useState('pos'); // 'pos' | 'recent' | 'held' | 'customers' | 'reports' | 'close'
+  // On a phone the catalog and the bill are separate full-screen tabs.
+  const [phonePane, setPhonePane] = useState('sarees'); // 'sarees' | 'bill'
 
   // Catalog State
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -440,9 +443,45 @@ export function BillingWorkspacePage() {
           TAB 1: LIVE POS & PRODUCT CATALOG WORKSPACE
          ===================================================================== */}
       {activeTab === 'pos' && (
-        <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 h-full max-h-full overflow-y-auto lg:overflow-hidden">
-          {/* Left/Center: Saree Catalog */}
-          <div className="flex-1 lg:flex-[7] xl:flex-[8] min-w-0 min-h-[52vh] lg:min-h-0 lg:h-full max-h-full flex flex-col overflow-hidden">
+        <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(300px,440px)] flex-1 min-h-0 h-full overflow-hidden gap-2">
+          {/* Phone only: tap Sarees for the search, or Bill to make the bill. */}
+          <div className="lg:hidden flex-shrink-0 grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-white/95 border border-sand-200 shadow-[0_2px_14px_rgba(0,0,0,0.02)]">
+            <button
+              type="button"
+              onClick={() => setPhonePane('sarees')}
+              aria-pressed={phonePane === 'sarees'}
+              className={`flex items-center justify-center gap-1.5 h-10 rounded-xl text-sm font-semibold cursor-pointer ${
+                phonePane === 'sarees'
+                  ? 'bg-charcoal-900 text-white'
+                  : 'text-charcoal-700 hover:bg-sand-50'
+              }`}
+            >
+              <Search className={`w-4 h-4 ${phonePane === 'sarees' ? 'text-gold-400' : 'text-charcoal-400'}`} />
+              Sarees
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhonePane('bill')}
+              aria-pressed={phonePane === 'bill'}
+              className={`flex items-center justify-center gap-1.5 h-10 rounded-xl text-sm font-semibold cursor-pointer ${
+                phonePane === 'bill'
+                  ? 'bg-charcoal-900 text-white'
+                  : 'text-charcoal-700 hover:bg-sand-50'
+              }`}
+            >
+              <ShoppingBag className={`w-4 h-4 ${phonePane === 'bill' ? 'text-gold-400' : 'text-charcoal-400'}`} />
+              Bill
+              {cartItems.length > 0 && (
+                <span className={`min-w-5 h-5 px-1 rounded-full text-[11px] font-bold leading-5 ${
+                  phonePane === 'bill' ? 'bg-gold-500 text-white' : 'bg-gold-100 text-gold-800'
+                }`}>
+                  {cartItems.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div className={`${phonePane === 'sarees' ? 'flex' : 'hidden'} lg:flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden`}>
             <ProductCatalog
               products={products}
               cartItems={cartItems}
@@ -454,8 +493,7 @@ export function BillingWorkspacePage() {
             />
           </div>
 
-          {/* Right: Live Cart & Invoice Drawer */}
-          <div className="w-full lg:w-[410px] xl:w-[440px] flex-shrink-0 min-h-[42vh] lg:min-h-0 lg:h-full max-h-full flex flex-col overflow-hidden">
+          <div className={`${phonePane === 'bill' ? 'flex' : 'hidden'} lg:flex min-w-0 min-h-0 flex-1 lg:flex-none lg:w-full flex-col overflow-hidden`}>
             <CartDrawer
               cartItems={cartItems}
               onUpdateQuantity={handleUpdateQuantity}

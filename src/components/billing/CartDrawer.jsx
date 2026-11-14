@@ -80,7 +80,7 @@ export function CartDrawer({
       >
         {/* Saree & Add-on Items List */}
         {cartItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-36 text-center p-4 rounded-xl border border-dashed border-sand-300 bg-sand-50/50">
+          <div className="flex flex-col items-center justify-center min-h-24 h-full text-center p-3 rounded-xl border border-dashed border-sand-300 bg-sand-50/50">
             <ShoppingBag className="w-7 h-7 text-charcoal-300 mb-1.5" />
             <p className="text-sm font-bold text-charcoal-700">Bill is Empty</p>
             <p className="text-xs text-charcoal-400 mt-0.5 max-w-xs">
@@ -245,7 +245,7 @@ export function CartDrawer({
       {/* =========================================================================
           FIXED BOTTOM: Financial Summary & Proceed to Checkout
          ========================================================================= */}
-      <div className="flex-shrink-0 pt-2.5 mt-2 border-t border-sand-200 space-y-2">
+      <div className="flex-shrink-0 pt-2.5 mt-2 border-t border-sand-200 space-y-2 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
         {/* Financial Summary */}
         <div className="space-y-1 text-xs bg-sand-50/80 p-3 rounded-xl border border-sand-200/80">
           <div className="flex justify-between text-xs text-charcoal-600 font-medium">
