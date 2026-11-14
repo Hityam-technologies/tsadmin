@@ -37,6 +37,10 @@ export function AdminLayout({ children }) {
   const [dateString, setDateString] = useState('');
 
   useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       setTimeString(
@@ -147,12 +151,12 @@ export function AdminLayout({ children }) {
 
   return (
     <BrandGradientBackground idPrefix="admin_">
-      <div className="min-h-screen p-3 sm:p-4 lg:p-5 flex gap-5 font-sans antialiased text-charcoal-900 selection:bg-gold-200">
+      <div className="min-h-screen min-h-dvh p-2.5 sm:p-4 lg:p-5 flex gap-3 lg:gap-5 font-sans antialiased text-charcoal-900 selection:bg-gold-200 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* =========================================================================
             LEFT SIDEBAR: Floating Rounded Card with Frosted Luxury Glass
            ========================================================================= */}
-        <aside className="hidden lg:flex w-72 rounded-[28px] bg-white/85 backdrop-blur-xl border border-sand-200/90 shadow-[0_12px_36px_rgba(197,162,83,0.10)] p-5 flex-col justify-between flex-shrink-0 sticky top-5 h-[calc(100vh-2.5rem)]">
-          <div>
+        <aside className="hidden lg:flex w-72 rounded-[28px] bg-white/85 backdrop-blur-xl border border-sand-200/90 shadow-[0_12px_36px_rgba(197,162,83,0.10)] p-5 flex-col justify-between flex-shrink-0 sticky top-5 h-[calc(100dvh-2.5rem)] overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             {/* Top Brand Header Badge with Royal Saffron Silk Gradient */}
             <div className="pt-1 pb-5 px-0.5">
               <div className="relative rounded-2xl p-4 bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_8px_24px_rgba(191,91,33,0.32),0_2px_6px_rgba(0,0,0,0.12)] flex items-center justify-center overflow-hidden group">
@@ -263,9 +267,9 @@ export function AdminLayout({ children }) {
          ========================================================================= */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Floating Top Bar with Frosted Glass */}
-        <header className="rounded-[24px] bg-white/85 backdrop-blur-xl border border-sand-200/90 shadow-[0_4px_20px_rgba(197,162,83,0.06)] px-5 sm:px-7 py-3.5 sm:py-4 mb-6 flex items-center justify-between gap-4 sticky top-5 z-30">
+        <header className="rounded-[20px] sm:rounded-[24px] bg-white/85 backdrop-blur-xl border border-sand-200/90 shadow-[0_4px_20px_rgba(197,162,83,0.06)] px-3 sm:px-5 lg:px-7 py-3 sm:py-4 mb-4 sm:mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sticky top-2 sm:top-5 z-30">
           {/* Left: Mobile Toggle + Nav Chevrons + Search Input Pill */}
-          <div className="flex items-center gap-3.5 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3.5 min-w-0 w-full sm:flex-1">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 rounded-xl text-charcoal-600 hover:bg-sand-100"
@@ -293,14 +297,14 @@ export function AdminLayout({ children }) {
             </div>
 
             {/* Modern Search Input Pill with Page Chip & Keyboard Shortcut */}
-            <div className="relative flex items-center rounded-full bg-sand-50/90 hover:bg-sand-50 border border-sand-200/90 px-4 py-2.5 text-sm text-charcoal-700 w-60 sm:w-80 md:w-96 lg:w-[420px] shadow-2xs transition-colors">
+            <div className="relative flex items-center rounded-full bg-sand-50/90 hover:bg-sand-50 border border-sand-200/90 px-3 sm:px-4 py-2 text-sm text-charcoal-700 min-w-0 flex-1 shadow-2xs transition-colors">
               <Search className="w-4.5 h-4.5 text-charcoal-400 mr-2.5 flex-shrink-0" />
-              <span className="px-3 py-1 rounded-full bg-white border border-sand-200 text-xs font-extrabold text-gold-900 mr-2.5 flex-shrink-0 shadow-2xs">
+              <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-white border border-sand-200 text-xs font-extrabold text-gold-900 mr-2.5 flex-shrink-0 shadow-2xs">
                 {getPageTitle()}
               </span>
               <input
                 type="text"
-                placeholder="Search catalog, clients, actions..."
+                placeholder={`Search ${getPageTitle().toLowerCase()}…`}
                 className="bg-transparent border-none outline-none text-sm font-semibold text-charcoal-900 placeholder:text-charcoal-400 placeholder:font-normal w-full"
               />
               <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-md bg-sand-200/60 border border-sand-300/40 text-[11px] text-charcoal-500 font-mono font-bold ml-2 flex-shrink-0">
@@ -310,11 +314,11 @@ export function AdminLayout({ children }) {
           </div>
 
           {/* Right: Admin Pill + Live Clock + Date */}
-          <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center justify-end gap-2 sm:gap-4 flex-shrink-0">
             {/* Admin Badge Pill */}
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-sand-50 border border-sand-200 text-sm font-extrabold text-charcoal-800 shadow-2xs">
+            <div className="flex items-center gap-2 px-2.5 sm:px-4 py-2 rounded-full bg-sand-50 border border-sand-200 text-sm font-extrabold text-charcoal-800 shadow-2xs">
               <ShieldCheck className="w-4.5 h-4.5 text-gold-600" />
-              <span>Admin</span>
+              <span className="hidden sm:inline">Admin</span>
             </div>
 
             {/* Real-time Clock and Date (matching screenshot) */}
@@ -351,8 +355,8 @@ export function AdminLayout({ children }) {
               className="fixed inset-0 bg-charcoal-900/50 backdrop-blur-sm"
               onClick={() => setIsMobileMenuOpen(false)}
             />
-            <div className="fixed inset-y-0 left-0 w-72 bg-[#FFFDF0]/95 backdrop-blur-xl p-5 shadow-2xl flex flex-col justify-between border-r border-gold-200/80">
-              <div>
+            <div className="fixed inset-y-0 left-0 w-[min(18rem,88vw)] max-w-[88vw] bg-[#FFFDF0]/95 backdrop-blur-xl p-4 sm:p-5 shadow-2xl flex flex-col justify-between border-r border-gold-200/80 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+              <div className="min-h-0 overflow-y-auto">
                 <div className="flex items-center justify-between pb-4 border-b border-sand-200/80 mb-4">
                   <div className="p-3 rounded-2xl bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_6px_20px_rgba(191,91,33,0.28)] flex-1 mr-3 flex items-center justify-center relative overflow-hidden">
                     <img

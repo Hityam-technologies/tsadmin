@@ -408,7 +408,7 @@ export function DashboardPage() {
         {/* Recent Inquiries Table (WhatsApp & Phone Concierge Leads) */}
         <div className="lg:col-span-2 bg-white rounded-[22px] border border-sand-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.02)] p-5 sm:p-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-charcoal-900 tracking-tight">
                   Recent Concierge Inquiries

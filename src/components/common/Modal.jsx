@@ -30,10 +30,10 @@ export function Modal({ isOpen, onClose, title, subtitle, children, maxWidth = '
         aria-hidden="true"
       />
 
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
+      <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-6">
         <div
           className={cn(
-            'relative w-full transform rounded-2xl bg-white text-left shadow-2xl transition-all border border-gold-200 animate-in zoom-in-95 duration-200 overflow-hidden',
+            'relative w-full transform rounded-t-2xl sm:rounded-2xl bg-white text-left shadow-2xl transition-all border border-gold-200 animate-in zoom-in-95 duration-200 overflow-hidden max-h-[92dvh]',
             maxWidth,
             className
           )}
@@ -41,7 +41,7 @@ export function Modal({ isOpen, onClose, title, subtitle, children, maxWidth = '
         >
           {/* Header */}
           {(title || subtitle) && (
-            <div className="flex items-start justify-between border-b border-sand-300 px-6 py-5 bg-sand-50/50">
+            <div className="flex items-start justify-between gap-3 border-b border-sand-300 px-4 sm:px-6 py-4 sm:py-5 bg-sand-50/50">
               <div>
                 {title && (
                   <h3 className="font-serif text-xl font-bold text-charcoal-900 leading-snug">
@@ -64,7 +64,7 @@ export function Modal({ isOpen, onClose, title, subtitle, children, maxWidth = '
           )}
 
           {/* Content Body */}
-          <div className="px-6 py-5 max-h-[80vh] overflow-y-auto">{children}</div>
+          <div className="px-4 sm:px-6 py-4 sm:py-5 max-h-[75dvh] overflow-y-auto">{children}</div>
         </div>
       </div>
     </div>

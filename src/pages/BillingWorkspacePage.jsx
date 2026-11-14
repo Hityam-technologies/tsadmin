@@ -440,9 +440,9 @@ export function BillingWorkspacePage() {
           TAB 1: LIVE POS & PRODUCT CATALOG WORKSPACE
          ===================================================================== */}
       {activeTab === 'pos' && (
-        <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 h-full max-h-full overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 h-full max-h-full overflow-y-auto lg:overflow-hidden">
           {/* Left/Center: Saree Catalog */}
-          <div className="flex-1 lg:flex-[7] xl:flex-[8] min-w-0 min-h-0 h-full max-h-full flex flex-col overflow-hidden">
+          <div className="flex-1 lg:flex-[7] xl:flex-[8] min-w-0 min-h-[52vh] lg:min-h-0 lg:h-full max-h-full flex flex-col overflow-hidden">
             <ProductCatalog
               products={products}
               cartItems={cartItems}
@@ -455,7 +455,7 @@ export function BillingWorkspacePage() {
           </div>
 
           {/* Right: Live Cart & Invoice Drawer */}
-          <div className="w-full lg:w-[410px] xl:w-[440px] flex-shrink-0 min-h-0 h-full max-h-full flex flex-col overflow-hidden">
+          <div className="w-full lg:w-[410px] xl:w-[440px] flex-shrink-0 min-h-[42vh] lg:min-h-0 lg:h-full max-h-full flex flex-col overflow-hidden">
             <CartDrawer
               cartItems={cartItems}
               onUpdateQuantity={handleUpdateQuantity}

@@ -137,7 +137,7 @@ export function ProductCatalog({
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
       >
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 sm:gap-4 pb-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 pb-4">
             {Array.from({ length: 8 }).map((_, index) => (
               <Skeleton key={index} className="aspect-[3/4] sm:aspect-[4/5] rounded-2xl" />
             ))}
@@ -175,7 +175,7 @@ export function ProductCatalog({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 sm:gap-4 pb-4">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 pb-4">
             {filteredProducts.map((product) => {
               const stock = Number(product.stockQuantity) || 0;
               const cartQty = getCartQuantity(product.id);

@@ -67,20 +67,20 @@ export function BillingLayout({
           {/* =========================================================================
               TOP ROW: Standalone Big Brand Medallion (Left) + Cut Nav Bar (Right)
              ========================================================================= */}
-          <header className="flex-shrink-0 mb-2 flex items-center gap-2.5 sm:gap-3 w-full">
+          <header className="flex-shrink-0 mb-2 flex flex-col lg:flex-row lg:items-center gap-2 w-full">
             {/* 1. SEPARATE BIG BRAND LOGO (Outside the bar on the same line) */}
             <div className="flex-shrink-0">
-              <div className="h-15 sm:h-16 md:h-17 px-5 sm:px-6 md:px-7 rounded-2xl sm:rounded-[22px] bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/70 shadow-[0_6px_20px_rgba(186,79,26,0.25)] flex items-center justify-center transition-all hover:scale-[1.02]">
+              <div className="h-12 sm:h-16 px-3 sm:px-6 rounded-2xl sm:rounded-[22px] bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/70 shadow-[0_6px_20px_rgba(186,79,26,0.25)] flex items-center justify-center">
                 <img
                   src={homeLogo}
                   alt="Tripuraa Sangrahah"
-                  className="h-11 sm:h-12 md:h-13 w-auto max-w-[240px] sm:max-w-[280px] md:max-w-[320px] object-contain brand-logo-on-saffron drop-shadow-sm"
+                  className="h-8 sm:h-12 w-auto max-w-[140px] sm:max-w-[240px] md:max-w-[280px] object-contain brand-logo-on-saffron drop-shadow-sm"
                 />
               </div>
             </div>
 
             {/* 2. THE CUT WHITE TOP BAR: Nav Pills & Actions (starts after logo) */}
-            <div className="flex-1 min-w-0 h-15 sm:h-16 md:h-17 bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-[22px] border border-sand-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.02)] px-4 sm:px-5 flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0 min-h-12 sm:h-16 bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-[22px] border border-sand-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.02)] px-3 sm:px-5 py-2 sm:py-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               {/* Center: Navigation Pills */}
               <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
                 {navTabs.map((tab) => {
@@ -113,7 +113,7 @@ export function BillingLayout({
                     className="flex items-center gap-1.5 h-9.5 sm:h-10 px-3 rounded-xl border border-sand-200 bg-white hover:bg-sand-50 text-charcoal-800 text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
                   >
                     <LayoutDashboard className="w-4 h-4 text-gold-700" />
-                    <span>Admin portal</span>
+                    <span className="hidden md:inline">Admin portal</span>
                   </button>
                 )}
 
