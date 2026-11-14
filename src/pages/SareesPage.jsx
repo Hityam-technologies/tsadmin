@@ -566,25 +566,31 @@ export function SareesPage() {
                         <span className="text-[10px] text-charcoal-400 block">{dash(saree.codeParts)}</span>
                       </td>
 
-                      {/* Active Toggle Switch */}
+                      {/* Published while stock remains. A sold-out saree is not shown as active. */}
                       <td className="py-3.5 px-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            sareeService
-                              .updateSaree(saree.id, { isActive: !saree.isActive })
-                              .then(() => fetchSarees())
-                          }
-                          className={`w-9 h-5 rounded-full p-0.5 transition-colors inline-block ${
-                            saree.isActive ? 'bg-gold-600' : 'bg-sand-300'
-                          }`}
-                        >
-                          <div
-                            className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                              saree.isActive ? 'translate-x-4' : 'translate-x-0'
+                        {Number(saree.stockQuantity) <= 0 || saree.stock === 'Out of Stock' ? (
+                          <span className="inline-flex items-center rounded-full bg-sand-100 px-2.5 py-1 text-[11px] font-semibold text-charcoal-500">
+                            Sold out
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              sareeService
+                                .updateSaree(saree.id, { isActive: !saree.isActive })
+                                .then(() => fetchSarees())
+                            }
+                            className={`w-9 h-5 rounded-full p-0.5 transition-colors inline-block ${
+                              saree.isActive ? 'bg-gold-600' : 'bg-sand-300'
                             }`}
-                          />
-                        </button>
+                          >
+                            <div
+                              className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                                saree.isActive ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        )}
                       </td>
 
                       {/* Actions */}
