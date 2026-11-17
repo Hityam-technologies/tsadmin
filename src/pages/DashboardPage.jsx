@@ -136,7 +136,7 @@ export function DashboardPage() {
       title: 'AI Try-On Drape Looks',
       value: showCount(counts?.savedLooks),
       change: '-',
-      path: '/try-on-ai',
+      path: '/try-on',
       icon: Zap,
       badgeColor: 'bg-gold-600',
     },

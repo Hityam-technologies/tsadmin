@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fashnService } from '../services/fashnService';
-import { sareeService } from '../services/sareeService';
-import { useToast } from '../context/ToastContext';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { Pagination } from '../components/common/Pagination';
 import { TableSkeleton } from '../components/common/Skeleton';
 import { EmptyState } from '../components/common/EmptyState';
 import { dash } from '../lib/utils';
+import { TryOnUsagePage } from './TryOnUsagePage';
 import {
   Sparkles,
   Zap,
@@ -17,18 +16,11 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Play,
   Maximize2,
-  ShieldCheck,
-  Settings,
-  RefreshCw,
-  Image as ImageIcon,
 } from 'lucide-react';
 
 export function TryOnAIPage() {
-  const { showToast } = useToast();
-
-  const [activeTab, setActiveTab] = useState('telemetry'); // 'telemetry' | 'sandbox' | 'config'
+  const [activeTab, setActiveTab] = useState('usage');
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState(null);
   const [config, setConfig] = useState(null);
@@ -41,16 +33,7 @@ export function TryOnAIPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  // Lightbox
   const [lightboxItem, setLightboxItem] = useState(null);
-
-  // Sandbox state
-  const [catalogSarees, setCatalogSarees] = useState([]);
-  const [selectedSaree, setSelectedSaree] = useState(null);
-  const [selectedModel, setSelectedModel] = useState('');
-  const [sandboxMode, setSandboxMode] = useState('quality');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [sandboxResult, setSandboxResult] = useState(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -74,42 +57,7 @@ export function TryOnAIPage() {
     fashnService.getConfig().then((res) => {
       if (res.success) setConfig(res.data);
     });
-    sareeService.getSarees({ limit: 12 }).then((res) => {
-      if (res.success && res.data.items.length > 0) {
-        setCatalogSarees(res.data.items);
-        setSelectedSaree(res.data.items[0]);
-      }
-    });
   }, [fetchLogs]);
-
-  const handleRunSandbox = async () => {
-    if (!selectedSaree) return;
-    setIsGenerating(true);
-    setSandboxResult(null);
-
-    try {
-      const res = await fashnService.runTestTryOn({
-        sareeId: selectedSaree.id,
-        sareeTitle: selectedSaree.title,
-        productImage: selectedSaree.image,
-        modelImage: selectedModel,
-      });
-
-      if (res.success) {
-        setSandboxResult(res.data);
-        showToast('FASHN.ai drape prediction completed', 'success');
-        fetchLogs();
-        const confRes = await fashnService.getConfig();
-        if (confRes.success) setConfig(confRes.data);
-      }
-    } catch {
-      showToast('Simulation failed', 'error');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const modelOptions = [];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -118,54 +66,40 @@ export function TryOnAIPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-gold-700">
-              Automated AI Drape Engine
+              Customer try-ons
             </span>
-            <Badge variant="gold" size="xs">
-              <Zap className="w-3 h-3 text-gold-600" /> FASHN.ai v1.6 Max
-            </Badge>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-charcoal-900 tracking-tight mt-0.5">
-            Virtual Try-On AI Studio
+            Try-On
           </h1>
           <p className="text-xs sm:text-sm text-charcoal-500 mt-1 font-medium">
-            Automated neural garment fitting via FASHN.ai REST API. Client drape physics are computed automatically without manual approval queues.
+            See how many try-ons each customer used, what they paid, and what those generations cost in FASHN credits.
           </p>
         </div>
 
-        {/* View Switcher Pills */}
         <div className="flex items-center gap-1.5 bg-sand-100 p-1.5 rounded-2xl border border-sand-300/80 self-start sm:self-auto">
           <button
-            onClick={() => setActiveTab('telemetry')}
+            type="button"
+            onClick={() => setActiveTab('usage')}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'telemetry'
+              activeTab === 'usage'
+                ? 'bg-white text-gold-900 shadow-sm'
+                : 'text-charcoal-600 hover:text-charcoal-900'
+            }`}
+          >
+            <span>Customer usage</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('jobs')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'jobs'
                 ? 'bg-white text-gold-900 shadow-sm'
                 : 'text-charcoal-600 hover:text-charcoal-900'
             }`}
           >
             <Activity className="w-3.5 h-3.5 text-gold-600" />
-            <span>Telemetry & Logs</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('sandbox')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'sandbox'
-                ? 'bg-white text-gold-900 shadow-sm'
-                : 'text-charcoal-600 hover:text-charcoal-900'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-saffron-600" />
-            <span>Drape Sandbox</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('config')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'config'
-                ? 'bg-white text-gold-900 shadow-sm'
-                : 'text-charcoal-600 hover:text-charcoal-900'
-            }`}
-          >
-            <Settings className="w-3.5 h-3.5 text-charcoal-600" />
-            <span>API Settings</span>
+            <span>Generation jobs</span>
           </button>
         </div>
       </div>
@@ -225,8 +159,10 @@ export function TryOnAIPage() {
         </div>
       </div>
 
-      {/* VIEW 1: Telemetry & Generation Run Logs */}
-      {activeTab === 'telemetry' && (
+      {/* Customer usage, or the real generation jobs. */}
+      {activeTab === 'usage' && <TryOnUsagePage embedded />}
+
+      {activeTab === 'jobs' && (
         <div className="space-y-4">
           {/* Search & Filter Bar */}
           <div className="bg-white p-4 rounded-[22px] border border-sand-300/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -378,287 +314,6 @@ export function TryOnAIPage() {
               limit={8}
               onPageChange={(p) => setPage(p)}
             />
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 2: Interactive Drape Testing Sandbox */}
-      {activeTab === 'sandbox' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Controls Panel */}
-          <div className="bg-white p-6 rounded-[24px] border border-sand-300/80 shadow-sm space-y-5">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gold-700">
-                Studio Playground
-              </span>
-              <h3 className="font-serif text-lg font-bold text-charcoal-900 mt-0.5">
-                Simulate FASHN.ai Drape Prediction
-              </h3>
-              <p className="text-xs text-charcoal-500 mt-1">
-                Select a catalog saree and mannequin pose to test the neural drape simulator.
-              </p>
-            </div>
-
-            {/* Step 1: Select Saree Garment */}
-            <div>
-              <label className="block text-xs font-semibold text-charcoal-800 mb-2">
-                1. Select Saree (`product_image`)
-              </label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-48 overflow-y-auto pr-1">
-                {catalogSarees.map((saree) => (
-                  <button
-                    key={saree.id}
-                    type="button"
-                    onClick={() => setSelectedSaree(saree)}
-                    className={`p-1 rounded-xl border text-left transition-all ${
-                      selectedSaree?.id === saree.id
-                        ? 'border-gold-600 ring-2 ring-gold-400 bg-gold-50/40'
-                        : 'border-sand-300 hover:border-sand-400'
-                    }`}
-                  >
-                    {saree.image ? (
-                      <img
-                        src={saree.image}
-                        alt={saree.title || '-'}
-                        className="w-full h-16 object-cover rounded-lg mb-1"
-                      />
-                    ) : (
-                      <span className="w-full h-16 rounded-lg mb-1 bg-sand-100 flex items-center justify-center text-charcoal-400">-</span>
-                    )}
-                    <span className="text-[10px] font-medium text-charcoal-900 block truncate">
-                      {saree.title}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Step 2: Select Model Pose */}
-            <div>
-              <label className="block text-xs font-semibold text-charcoal-800 mb-2">
-                2. Select Model Pose (`model_image`)
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {modelOptions.length === 0 ? <span className="text-xs text-charcoal-400">-</span> : null}
-                {modelOptions.map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setSelectedModel(opt.url)}
-                    className={`p-2 rounded-xl border text-left transition-all ${
-                      selectedModel === opt.url
-                        ? 'border-gold-600 ring-2 ring-gold-400 bg-gold-50/40'
-                        : 'border-sand-300 hover:border-sand-400'
-                    }`}
-                  >
-                    <img
-                      src={opt.url}
-                      alt={opt.label}
-                      className="w-full h-20 object-cover rounded-lg mb-1"
-                    />
-                    <span className="text-[10px] font-medium text-charcoal-900 block truncate">
-                      {opt.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Step 3: Generation Mode */}
-            <div className="flex items-center justify-between pt-2 border-t border-sand-200">
-              <div>
-                <span className="text-xs font-semibold text-charcoal-900 block">
-                  Rendering Mode
-                </span>
-                <span className="text-[10px] text-charcoal-500">
-                  Quality preserves zari shine and border pleats
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {['performance', 'quality'].map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setSandboxMode(m)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize ${
-                      sandboxMode === m
-                        ? 'bg-gold-600 text-white shadow-sm'
-                        : 'bg-sand-100 text-charcoal-700'
-                    }`}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Run Button */}
-            <button
-              onClick={handleRunSandbox}
-              disabled={isGenerating || !selectedSaree}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gold-600 hover:bg-gold-700 disabled:opacity-50 text-white font-semibold text-xs shadow-md shadow-gold-600/20 transition-all"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Computing Neural Drape with FASHN.ai (tryon-max)...</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 fill-white" />
-                  <span>Run FASHN.ai Prediction</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Results Display Canvas */}
-          <div className="bg-white p-6 rounded-[24px] border border-sand-300/80 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between border-b border-sand-200 pb-3 mb-4">
-                <span className="font-serif font-bold text-sm text-charcoal-900">
-                  Prediction Output Canvas
-                </span>
-                {sandboxResult && (
-                  <Badge variant="gold" size="xs">
-                    {sandboxResult.latencySeconds}s Latency
-                  </Badge>
-                )}
-              </div>
-
-              {isGenerating ? (
-                <div className="h-80 rounded-2xl bg-sand-50 border border-dashed border-sand-300 flex flex-col items-center justify-center text-center p-6 space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center animate-spin">
-                    <Sparkles className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-serif font-bold text-sm text-charcoal-900">
-                    FASHN.ai Processing
-                  </h4>
-                  <p className="text-xs text-charcoal-500 max-w-xs leading-relaxed">
-                    Analyzing model silhouette, aligning saree pallu physics, and blending gold zari reflections...
-                  </p>
-                </div>
-              ) : sandboxResult ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-[11px] font-semibold text-charcoal-500 block mb-1">
-                      Input Saree (`product_image`)
-                    </span>
-                    {sandboxResult.productImage ? (
-                      <img
-                        src={sandboxResult.productImage}
-                        alt="Input"
-                        className="w-full h-72 object-cover rounded-xl border border-sand-300"
-                      />
-                    ) : (
-                      <span className="w-full h-72 rounded-xl border border-sand-300 flex items-center justify-center text-charcoal-400">-</span>
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-semibold text-charcoal-500 block mb-1">
-                      Synthesized Output (`tryon-max`)
-                    </span>
-                    {sandboxResult.outputImage ? (
-                      <img
-                        src={sandboxResult.outputImage}
-                        alt="Output"
-                        className="w-full h-72 object-cover rounded-xl border-2 border-gold-500 shadow-md"
-                      />
-                    ) : (
-                      <span className="w-full h-72 rounded-xl border-2 border-gold-500 flex items-center justify-center text-charcoal-400">-</span>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="h-80 rounded-2xl bg-sand-50/60 border border-dashed border-sand-300 flex flex-col items-center justify-center text-center p-6 space-y-2">
-                  <ImageIcon className="w-8 h-8 text-sand-400" />
-                  <span className="text-xs font-semibold text-charcoal-700">
-                    No Prediction Generated Yet
-                  </span>
-                  <p className="text-[11px] text-charcoal-400 max-w-xs">
-                    Select a saree from the left and click "Run FASHN.ai Prediction" to inspect the output.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {sandboxResult && (
-              <div className="p-3 rounded-xl bg-gold-50/70 border border-gold-200 mt-4 text-[11px] text-gold-900 flex items-center justify-between">
-                <span>Model: {sandboxResult.modelName} &bull; Cost: 1 credit</span>
-                <button
-                  onClick={() => setLightboxItem(sandboxResult)}
-                  className="font-semibold underline hover:text-gold-950"
-                >
-                  View Full Screen Lightbox
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 3: API Settings & Credentials */}
-      {activeTab === 'config' && (
-        <div className="bg-white p-6 rounded-[24px] border border-sand-300/80 shadow-sm max-w-2xl space-y-5">
-          <div className="border-b border-sand-200 pb-3">
-            <h3 className="font-serif font-bold text-base text-charcoal-900">
-              FASHN.ai Developer Integration Keys
-            </h3>
-            <p className="text-xs text-charcoal-500 mt-0.5">
-              Production API credentials powering automated virtual try-on in the mobile app.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                FASHN API Secret Key
-              </label>
-              <input
-                type="text"
-                disabled
-                value={config?.apiKeyMasked || '-'}
-                className="w-full rounded-xl border border-sand-300 bg-sand-50 px-3 py-2 text-xs font-mono text-charcoal-700"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                FASHN REST API Endpoint
-              </label>
-              <input
-                type="text"
-                disabled
-                value="https://api.fashn.ai/v1/run"
-                className="w-full rounded-xl border border-sand-300 bg-sand-50 px-3 py-2 text-xs font-mono text-charcoal-700"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                  Default Garment Category
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value="one-pieces (Saree Drapes)"
-                  className="w-full rounded-xl border border-sand-300 bg-sand-50 px-3 py-2 text-xs text-charcoal-700"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                  Safety NSFW Filter
-                </label>
-                <div className="flex items-center gap-2 py-2">
-                  <ShieldCheck className="w-4 h-4 text-gold-600" />
-                  <span className="text-xs font-medium text-charcoal-900">
-                    Strict Automated Filter
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import { Download, ArrowLeft } from 'lucide-react';
 import { tryOnUsageService } from '../services/tryOnUsageService';
 import { TableSkeleton } from '../components/common/Skeleton';
@@ -29,9 +28,8 @@ const PRESETS = [
   { id: 'abuse', label: 'Free-quota abuse' },
 ];
 
-export function TryOnUsagePage() {
-  const { userId } = useParams();
-  const navigate = useNavigate();
+export function TryOnUsagePage({ embedded = false }) {
+  const [userId, setUserId] = useState(null);
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null);
@@ -106,7 +104,7 @@ export function TryOnUsagePage() {
     const person = detail?.summary;
     return (
       <div className="space-y-4">
-        <button type="button" onClick={() => navigate('/try-on-usage')} className="inline-flex items-center gap-1.5 text-xs font-semibold text-charcoal-600">
+        <button type="button" onClick={() => setUserId(null)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-charcoal-600">
           <ArrowLeft className="w-4 h-4" /> All users
         </button>
         {loading || !person ? <TableSkeleton rows={6} cols={4} /> : (
@@ -159,7 +157,7 @@ export function TryOnUsagePage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-charcoal-900">Try-on usage</h1>
+          {embedded ? null : <h1 className="text-2xl font-bold text-charcoal-900">Try-on usage</h1>}
           <p className="text-xs text-charcoal-500 mt-1">Customer try-ons and the FASHN credits you pay are kept separate.</p>
         </div>
         <button type="button" onClick={download} className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal-900 px-3 py-2 text-xs font-semibold text-white">
@@ -227,7 +225,7 @@ export function TryOnUsagePage() {
               </thead>
               <tbody className="divide-y divide-sand-100">
                 {(report?.items || []).map((row) => (
-                  <tr key={row.userId} className="cursor-pointer hover:bg-sand-50" onClick={() => navigate(`/try-on-usage/${row.userId}`)}>
+                  <tr key={row.userId} className="cursor-pointer hover:bg-sand-50" onClick={() => setUserId(row.userId)}>
                     <td className="px-3 py-3">
                       <div className="font-semibold text-charcoal-900">{row.name}</div>
                       <div className="text-[11px] text-charcoal-500">{row.phone}</div>

@@ -16,7 +16,6 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { UsersPage } from './pages/UsersPage';
 import { TryOnAIPage } from './pages/TryOnAIPage';
-import { TryOnUsagePage } from './pages/TryOnUsagePage';
 import { ContentStudioPage } from './pages/ContentStudioPage';
 import { SystemSettingsPage } from './pages/SystemSettingsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
@@ -89,10 +88,11 @@ export function App() {
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="enquiries" element={<EnquiriesPage />} />
                 <Route path="users" element={<UsersPage />} />
-                <Route path="try-on-ai" element={<TryOnAIPage />} />
-                <Route path="try-on-usage" element={<TryOnUsagePage />} />
-                <Route path="try-on-usage/:userId" element={<TryOnUsagePage />} />
-                <Route path="try-on-moderation" element={<Navigate to="/try-on-ai" replace />} />
+                <Route path="try-on" element={<TryOnAIPage />} />
+                <Route path="try-on-ai" element={<Navigate to="/try-on" replace />} />
+                <Route path="try-on-usage" element={<Navigate to="/try-on" replace />} />
+                <Route path="try-on-usage/:userId" element={<Navigate to="/try-on" replace />} />
+                <Route path="try-on-moderation" element={<Navigate to="/try-on" replace />} />
                 <Route path="content" element={<ContentStudioPage />} />
                 <Route path="settings" element={<SystemSettingsPage />} />
                 <Route path="audit-logs" element={<AuditLogsPage />} />
