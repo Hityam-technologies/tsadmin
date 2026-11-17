@@ -83,82 +83,82 @@ export function OrdersPage() {
         </div>
       </div>
 
-      {selected ? (
-        <div className="bg-white rounded-[22px] border border-sand-200 p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold text-charcoal-900">{selected.orderNumber}</h2>
-              <p className="text-xs text-charcoal-500 mt-1">{selected.customerName} · {selected.customerPhone}</p>
-              <p className="text-xs text-charcoal-500">
-                {selected.shippingAddress?.addressLine1}, {selected.shippingAddress?.city} {selected.shippingAddress?.postalCode}
-              </p>
-            </div>
-            <p className="text-sm font-semibold text-charcoal-900">{rupees(selected.totalAmount)} · {selected.paymentMethod === 'COD' ? 'Cash on delivery' : 'Online'}</p>
-          </div>
-          <ul className="mt-3 space-y-1 text-xs text-charcoal-800">
-            {selected.items.map((item) => (
-              <li key={`${item.productId}-${item.quantity}`}>{item.title} · Qty {item.quantity} · {rupees(item.price * item.quantity)}</li>
-            ))}
-          </ul>
-          <ol className="mt-4 space-y-2">
-            {(selected.trackingSteps || []).map((step) => (
-              <li key={step.title} className="flex items-start gap-2 text-sm">
-                <span className={`mt-1 h-2.5 w-2.5 rounded-full ${step.completed || step.current ? 'bg-gold-600' : 'bg-sand-300'}`} />
-                <span>
-                  <span className="font-semibold text-charcoal-900">{step.title}</span>
-                  {step.current ? <span className="ml-2 text-[11px] font-semibold text-gold-700">Now</span> : null}
-                </span>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {NEXT[selected.status] ? (
-              <button type="button" disabled={saving} onClick={() => move(NEXT[selected.status].status)} className="rounded-xl bg-gold-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60">
-                {saving ? 'Saving…' : NEXT[selected.status].label}
-              </button>
-            ) : (
-              <p className="text-xs text-charcoal-500">{selected.statusLabel}. Nothing further to move.</p>
-            )}
-            {selected.status === 'CONFIRMED' || selected.status === 'PROCESSING' ? (
-              <button type="button" disabled={saving} onClick={() => move('CANCELLED')} className="rounded-xl border border-sand-300 px-4 py-2 text-xs font-semibold text-charcoal-700">
-                Cancel order
-              </button>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="bg-white rounded-[22px] border border-sand-200 overflow-x-auto">
-        {loading ? <TableSkeleton rows={6} cols={4} /> : (
-          <table className="w-full min-w-[640px] text-left text-xs">
-            <thead className="bg-sand-50 text-charcoal-500">
-              <tr>
-                {['Order', 'Customer', 'Total', 'Status'].map((heading) => (
-                  <th key={heading} className="px-3 py-3 font-semibold">{heading}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-sand-100">
-              {orders.map((order) => (
-                <tr key={order.id} className={`cursor-pointer hover:bg-sand-50 ${selectedId === order.id ? 'bg-sand-50' : ''}`} onClick={() => setSelectedId(order.id)}>
-                  <td className="px-3 py-3">
-                    <div className="font-semibold text-charcoal-900">{order.orderNumber}</div>
-                    <div className="text-[11px] text-charcoal-500">{order.dateFormatted}</div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <div>{order.customerName}</div>
-                    <div className="text-[11px] text-charcoal-500">{order.shippingAddress?.city || '-'}</div>
-                  </td>
-                  <td className="px-3 py-3">{rupees(order.totalAmount)}</td>
-                  <td className="px-3 py-3">{order.statusLabel}</td>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
+        <div className="lg:col-span-3 bg-white rounded-[22px] border border-sand-200 overflow-x-auto">
+          {loading ? <TableSkeleton rows={6} cols={4} /> : (
+            <table className="w-full text-left text-xs">
+              <thead className="bg-sand-50 text-charcoal-500">
+                <tr>
+                  {['Order', 'Customer', 'Total', 'Status'].map((heading) => (
+                    <th key={heading} className="px-3 py-3 font-semibold">{heading}</th>
+                  ))}
                 </tr>
-              ))}
-              {orders.length === 0 && (
-                <tr><td colSpan={4} className="px-3 py-8 text-center text-charcoal-500">No orders yet.</td></tr>
-              )}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody className="divide-y divide-sand-100">
+                {orders.map((order) => (
+                  <tr key={order.id} className={`cursor-pointer hover:bg-sand-50 ${selectedId === order.id ? 'bg-sand-50' : ''}`} onClick={() => setSelectedId(order.id)}>
+                    <td className="px-3 py-3">
+                      <div className="font-semibold text-charcoal-900">{order.orderNumber}</div>
+                      <div className="text-[11px] text-charcoal-500">{order.dateFormatted}</div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div>{order.customerName}</div>
+                      <div className="text-[11px] text-charcoal-500">{order.shippingAddress?.city || '-'}</div>
+                    </td>
+                    <td className="px-3 py-3">{rupees(order.totalAmount)}</td>
+                    <td className="px-3 py-3">{order.statusLabel}</td>
+                  </tr>
+                ))}
+                {orders.length === 0 && (
+                  <tr><td colSpan={4} className="px-3 py-8 text-center text-charcoal-500">No orders yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        <div className="lg:col-span-2 bg-white rounded-[22px] border border-sand-200 p-5 lg:sticky lg:top-5">
+          {!selected ? <p className="text-sm text-charcoal-500">Select an order to see the steps.</p> : (
+            <>
+              <div>
+                <h2 className="text-lg font-bold text-charcoal-900">{selected.orderNumber}</h2>
+                <p className="text-sm font-semibold text-charcoal-900 mt-1">{rupees(selected.totalAmount)} · {selected.paymentMethod === 'COD' ? 'Cash on delivery' : 'Online'}</p>
+                <p className="text-xs text-charcoal-500 mt-2">{selected.customerName} · {selected.customerPhone}</p>
+                <p className="text-xs text-charcoal-500">
+                  {selected.shippingAddress?.addressLine1}, {selected.shippingAddress?.city} {selected.shippingAddress?.postalCode}
+                </p>
+              </div>
+              <ul className="mt-3 space-y-1 text-xs text-charcoal-800">
+                {selected.items.map((item) => (
+                  <li key={`${item.productId}-${item.quantity}`}>{item.title} · Qty {item.quantity} · {rupees(item.price * item.quantity)}</li>
+                ))}
+              </ul>
+              <ol className="mt-4 space-y-2">
+                {(selected.trackingSteps || []).map((step) => (
+                  <li key={step.title} className="flex items-center gap-2 text-sm">
+                    <span className={`h-2.5 w-2.5 rounded-full ${step.completed || step.current ? 'bg-gold-600' : 'bg-sand-300'}`} />
+                    <span className="font-semibold text-charcoal-900">{step.title}</span>
+                    {step.current ? <span className="text-[11px] font-semibold text-gold-700">Now</span> : null}
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {NEXT[selected.status] ? (
+                  <button type="button" disabled={saving} onClick={() => move(NEXT[selected.status].status)} className="rounded-xl bg-gold-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60">
+                    {saving ? 'Saving…' : NEXT[selected.status].label}
+                  </button>
+                ) : (
+                  <p className="text-xs text-charcoal-500">{selected.statusLabel}</p>
+                )}
+                {selected.status === 'CONFIRMED' || selected.status === 'PROCESSING' ? (
+                  <button type="button" disabled={saving} onClick={() => move('CANCELLED')} className="rounded-xl border border-sand-300 px-4 py-2 text-xs font-semibold text-charcoal-700">
+                    Cancel order
+                  </button>
+                ) : null}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
