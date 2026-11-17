@@ -79,6 +79,7 @@ export function AdminLayout({ children }) {
     if (path.startsWith('/categories')) return 'Categories';
     if (path.startsWith('/enquiries')) return 'Enquiries';
     if (path.startsWith('/users')) return 'Customers';
+    if (path.startsWith('/try-on-usage')) return 'Try-on usage';
     if (path.startsWith('/try-on-ai')) return 'FASHN.ai';
     if (path.startsWith('/content')) return 'Content';
     if (path.startsWith('/settings')) return 'Settings';
@@ -127,6 +128,12 @@ export function AdminLayout({ children }) {
       label: 'FASHN.ai Try-On',
       path: '/try-on-ai',
       icon: Zap,
+      allowed: true,
+    },
+    {
+      label: 'Try-on usage',
+      path: '/try-on-usage',
+      icon: History,
       allowed: true,
     },
     {
