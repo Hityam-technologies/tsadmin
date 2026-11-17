@@ -105,9 +105,8 @@ export function OrdersPage() {
               <li key={step.title} className="flex items-start gap-2 text-sm">
                 <span className={`mt-1 h-2.5 w-2.5 rounded-full ${step.completed || step.current ? 'bg-gold-600' : 'bg-sand-300'}`} />
                 <span>
-                  <span className={`font-semibold ${step.current ? 'text-charcoal-900' : 'text-charcoal-600'}`}>{step.title}</span>
+                  <span className="font-semibold text-charcoal-900">{step.title}</span>
                   {step.current ? <span className="ml-2 text-[11px] font-semibold text-gold-700">Now</span> : null}
-                  <span className="block text-[11px] text-charcoal-500">{step.desc}</span>
                 </span>
               </li>
             ))}
