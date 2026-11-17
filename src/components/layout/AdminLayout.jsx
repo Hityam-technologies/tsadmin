@@ -22,6 +22,8 @@ import {
   ShieldCheck,
   Zap,
   Store,
+  Receipt,
+  Ticket,
 } from 'lucide-react';
 
 export function AdminLayout({ children }) {
@@ -79,6 +81,8 @@ export function AdminLayout({ children }) {
     if (path.startsWith('/categories')) return 'Categories';
     if (path.startsWith('/enquiries')) return 'Enquiries';
     if (path.startsWith('/users')) return 'Customers';
+    if (path.startsWith('/orders')) return 'Orders';
+    if (path.startsWith('/coupons')) return 'Coupons';
     if (path.startsWith('/try-on')) return 'Try-On';
     if (path.startsWith('/content')) return 'Content';
     if (path.startsWith('/settings')) return 'Settings';
@@ -121,6 +125,18 @@ export function AdminLayout({ children }) {
       label: 'Customers',
       path: '/users',
       icon: Users,
+      allowed: true,
+    },
+    {
+      label: 'Orders',
+      path: '/orders',
+      icon: Receipt,
+      allowed: true,
+    },
+    {
+      label: 'Coupons',
+      path: '/coupons',
+      icon: Ticket,
       allowed: true,
     },
     {

@@ -33,6 +33,8 @@ describe('Admin Navigation & Admin Suite Visibility', () => {
     expect(screen.getByText('Categories')).toBeInTheDocument();
     expect(screen.getByText('Enquiries')).toBeInTheDocument();
     expect(screen.getByText('Customers')).toBeInTheDocument();
+    expect(screen.getByText('Orders')).toBeInTheDocument();
+    expect(screen.getByText('Coupons')).toBeInTheDocument();
     expect(screen.getByText('Try-On')).toBeInTheDocument();
     expect(screen.getByText('Content Studio')).toBeInTheDocument();
     expect(screen.getByText('System Settings')).toBeInTheDocument();
