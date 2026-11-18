@@ -28,4 +28,16 @@ export const commerceService = {
       body: JSON.stringify({ isActive }),
     });
   },
+  referralSettings() {
+    return apiRequest('/admin/referrals/settings', { method: 'GET' });
+  },
+  saveReferralSettings(body) {
+    return apiRequest('/admin/referrals/settings', {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+  referrals(params = {}) {
+    return apiRequest('/admin/referrals', { method: 'GET', query: params });
+  },
 };

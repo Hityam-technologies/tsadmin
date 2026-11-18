@@ -24,6 +24,7 @@ import {
   Store,
   Receipt,
   Ticket,
+  Gift,
 } from 'lucide-react';
 
 export function AdminLayout({ children }) {
@@ -83,6 +84,7 @@ export function AdminLayout({ children }) {
     if (path.startsWith('/users')) return 'Customers';
     if (path.startsWith('/orders')) return 'Orders';
     if (path.startsWith('/coupons')) return 'Coupons';
+    if (path.startsWith('/referrals')) return 'Referrals';
     if (path.startsWith('/try-on')) return 'Try-On';
     if (path.startsWith('/content')) return 'Content';
     if (path.startsWith('/settings')) return 'Settings';
@@ -137,6 +139,12 @@ export function AdminLayout({ children }) {
       label: 'Coupons',
       path: '/coupons',
       icon: Ticket,
+      allowed: true,
+    },
+    {
+      label: 'Referrals',
+      path: '/referrals',
+      icon: Gift,
       allowed: true,
     },
     {

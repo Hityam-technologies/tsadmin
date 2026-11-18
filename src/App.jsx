@@ -18,6 +18,7 @@ import { UsersPage } from './pages/UsersPage';
 import { TryOnAIPage } from './pages/TryOnAIPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { CouponsPage } from './pages/CouponsPage';
+import { ReferralsPage } from './pages/ReferralsPage';
 import { ContentStudioPage } from './pages/ContentStudioPage';
 import { SystemSettingsPage } from './pages/SystemSettingsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
@@ -92,6 +93,7 @@ export function App() {
                 <Route path="users" element={<UsersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="coupons" element={<CouponsPage />} />
+                <Route path="referrals" element={<ReferralsPage />} />
                 <Route path="try-on" element={<TryOnAIPage />} />
                 <Route path="try-on-ai" element={<Navigate to="/try-on" replace />} />
                 <Route path="try-on-usage" element={<Navigate to="/try-on" replace />} />

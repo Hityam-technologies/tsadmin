@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { commerceService } from '../services/commerceService';
 import { useToast } from '../context/ToastContext';
 
@@ -91,6 +92,11 @@ export function CouponsPage() {
         <button type="button" disabled={saving} onClick={save} className="mt-4 rounded-xl bg-gold-600 px-4 py-2 text-xs font-semibold text-white">
           {saving ? 'Saving…' : 'Save coupon'}
         </button>
+        <p className="text-sm text-charcoal-500 mt-4">
+          Friend referral cash is separate from coupons.{' '}
+          <Link to="/referrals" className="font-semibold text-gold-700">Open referrals</Link>
+          {' '}to set the signup cash and the first-order reward.
+        </p>
       </div>
 
       <div className="bg-white rounded-[22px] border border-sand-200 overflow-hidden">
