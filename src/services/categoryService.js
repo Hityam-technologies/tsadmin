@@ -36,13 +36,18 @@ export const categoryService = {
    * API: DELETE /admin/categories/:id
    */
   async deleteCategory(id, options = {}) {
-    const body = {};
-    if (typeof options === 'string') body.reassignTo = options;
-    if (options.reassignTo) body.reassignTo = options.reassignTo;
-    if (options.removeSarees) body.removeSarees = true;
+    const reassignTo = typeof options === 'string' ? options : options.reassignTo;
+    const removeSarees = typeof options === 'object' && options.removeSarees === true;
     return apiRequest(`/admin/categories/${encodeURIComponent(id)}`, {
       method: 'DELETE',
-      body: Object.keys(body).length ? JSON.stringify(body) : undefined,
+      query: {
+        reassignTo: removeSarees ? undefined : reassignTo,
+        removeSarees: removeSarees ? 'true' : undefined,
+      },
+      body: JSON.stringify({
+        reassignTo: removeSarees ? '' : (reassignTo || ''),
+        removeSarees,
+      }),
     });
   },
 
