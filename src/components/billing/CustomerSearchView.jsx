@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   X,
 } from 'lucide-react';
+import { CustomerAvatar } from '../common/CustomerAvatar';
 
 export function CustomerSearchView({
   onSelectCustomer,
@@ -163,9 +164,7 @@ export function CustomerSearchView({
                 >
                   <td className="p-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-sand-100 border border-gold-300 flex items-center justify-center text-xs font-serif font-extrabold text-gold-900 flex-shrink-0 group-hover:bg-gold-100 transition-colors">
-                        {(cust.name || 'G').charAt(0).toUpperCase()}
-                      </div>
+                      <CustomerAvatar name={cust.name} avatarUrl={cust.avatarUrl} size="sm" />
                       <div>
                         <p className="font-bold text-charcoal-900 group-hover:text-gold-900 transition-colors">
                           {cust.name}
@@ -253,9 +252,7 @@ export function CustomerSearchView({
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-2.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-sand-100 border border-gold-300 flex items-center justify-center text-xs font-serif font-extrabold text-gold-900 flex-shrink-0 group-hover:bg-gold-100 transition-colors">
-                        {(cust.name || 'G').charAt(0).toUpperCase()}
-                      </div>
+                      <CustomerAvatar name={cust.name} avatarUrl={cust.avatarUrl} />
                       <div>
                         <h4 className="text-sm font-bold text-charcoal-900 group-hover:text-gold-900 transition-colors">
                           {cust.name}

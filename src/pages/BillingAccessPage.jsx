@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BrandGradientBackground } from '../components/common/BrandGradientBackground';
-import homeLogo from '../assets/homeLogo.png';
+import { BrandLogo } from '../components/common/BrandLogo';
 import { billingService } from '../services/billingService';
 import { useAuth } from '../context/AuthContext';
 import { SessionGate } from '../components/auth/SessionGate';
@@ -175,19 +175,7 @@ export function BillingAccessPage({ onPinSuccess }) {
         <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
           {/* Brand Logo in Royal Saffron Silk Gradient Badge */}
           <div className="flex justify-center mb-4 px-4">
-            <div className="relative rounded-2xl p-4 bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_8px_28px_rgba(191,91,33,0.32)] flex items-center justify-center overflow-hidden">
-              <div
-                className="absolute inset-0 pointer-events-none opacity-35"
-                style={{
-                  background: 'radial-gradient(ellipse at 50% 20%, rgba(255, 235, 195, 0.6) 0%, transparent 70%)',
-                }}
-              />
-              <img
-                src={homeLogo}
-                alt="Tripuraa Sangrahah"
-                className="relative z-10 w-full max-w-[230px] h-auto max-h-20 object-contain brand-logo-on-saffron"
-              />
-            </div>
+            <BrandLogo className="h-24 w-24" />
           </div>
 
           <h2 className="text-lg font-serif font-extrabold text-charcoal-900 tracking-tight">

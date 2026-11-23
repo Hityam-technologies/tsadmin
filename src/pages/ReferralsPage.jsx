@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { commerceService } from '../services/commerceService';
 import { useToast } from '../context/ToastContext';
+import { CustomerAvatar } from '../components/common/CustomerAvatar';
 
 function money(amount) {
   return `₹${Number(amount || 0).toLocaleString('en-IN')}`;
@@ -146,12 +147,22 @@ export function ReferralsPage() {
             ) : rows.map((row) => (
               <tr key={row.id}>
                 <td className="px-3 py-3">
-                  <div className="font-semibold">{row.referee?.name}</div>
-                  <div className="text-[11px] text-charcoal-500">{row.referee?.email}</div>
+                  <div className="flex items-center gap-2">
+                    <CustomerAvatar name={row.referee?.name} avatarUrl={row.referee?.avatarUrl} size="sm" />
+                    <div>
+                      <div className="font-semibold">{row.referee?.name}</div>
+                      <div className="text-[11px] text-charcoal-500">{row.referee?.email}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-3 py-3">
-                  <div className="font-semibold">{row.referrer?.name}</div>
-                  <div className="text-[11px] text-charcoal-500">{row.referrer?.code}</div>
+                  <div className="flex items-center gap-2">
+                    <CustomerAvatar name={row.referrer?.name} avatarUrl={row.referrer?.avatarUrl} size="sm" />
+                    <div>
+                      <div className="font-semibold">{row.referrer?.name}</div>
+                      <div className="text-[11px] text-charcoal-500">{row.referrer?.code}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-3 py-3">{money(row.refereeSignupBonus)}</td>
                 <td className="px-3 py-3">{money(row.referrerReward)}</td>

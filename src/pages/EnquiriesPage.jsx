@@ -19,6 +19,7 @@ import {
   User,
   ShoppingBag,
 } from 'lucide-react';
+import { CustomerAvatar } from '../components/common/CustomerAvatar';
 
 export function EnquiriesPage() {
   const { currentUser } = useAuth();
@@ -224,9 +225,18 @@ export function EnquiriesPage() {
                     </td>
 
                     <td className="py-3.5 px-3">
-                      <div className="font-semibold text-charcoal-900">{enq.customerName}</div>
-                      <span className="text-[11px] text-charcoal-500 block">{enq.customerPhone}</span>
-                      <span className="text-[10px] text-charcoal-400 block">{enq.customerEmail}</span>
+                      <div className="flex items-center gap-2.5">
+                        <CustomerAvatar
+                          name={enq.customerName}
+                          avatarUrl={enq.customerAvatarUrl || enq.avatarUrl}
+                          size="sm"
+                        />
+                        <div>
+                          <div className="font-semibold text-charcoal-900">{enq.customerName}</div>
+                          <span className="text-[11px] text-charcoal-500 block">{enq.customerPhone}</span>
+                          <span className="text-[10px] text-charcoal-400 block">{enq.customerEmail}</span>
+                        </div>
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-3">
@@ -333,12 +343,21 @@ export function EnquiriesPage() {
                   </Badge>
                 </div>
 
-                <div className="text-sm font-bold text-charcoal-900 mb-1">
-                  {selectedEnquiry.customerName}
-                </div>
-                <div className="text-xs text-charcoal-600 space-y-0.5 mb-4">
-                  <div>Phone: {selectedEnquiry.customerPhone}</div>
-                  <div>Email: {selectedEnquiry.customerEmail}</div>
+                <div className="flex items-center gap-3 mb-4">
+                  <CustomerAvatar
+                    name={selectedEnquiry.customerName}
+                    avatarUrl={selectedEnquiry.customerAvatarUrl || selectedEnquiry.avatarUrl}
+                    size="lg"
+                  />
+                  <div>
+                    <div className="text-sm font-bold text-charcoal-900">
+                      {selectedEnquiry.customerName}
+                    </div>
+                    <div className="text-xs text-charcoal-600 space-y-0.5 mt-1">
+                      <div>Phone: {selectedEnquiry.customerPhone}</div>
+                      <div>Email: {selectedEnquiry.customerEmail}</div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* 1-Tap Client Actions: Call, WhatsApp, Email */}

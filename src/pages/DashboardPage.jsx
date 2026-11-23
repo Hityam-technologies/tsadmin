@@ -27,6 +27,7 @@ import {
   Phone,
   Zap,
 } from 'lucide-react';
+import { CustomerAvatar } from '../components/common/CustomerAvatar';
 
 function CustomChartTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
@@ -440,8 +441,21 @@ export function DashboardPage() {
                   {(recentEnquiries || []).slice(0, 5).map((enq) => (
                     <tr key={enq.id} className="hover:bg-sand-50/70 transition-colors">
                       <td className="py-3 px-2">
-                        <div className="font-bold text-xs sm:text-sm text-charcoal-900">{enq.userName}</div>
-                        <div className="text-[11px] font-medium text-charcoal-500">{enq.phone}</div>
+                        <div className="flex items-center gap-2.5">
+                          <CustomerAvatar
+                            name={enq.userName || enq.customerName}
+                            avatarUrl={enq.customerAvatarUrl || enq.avatarUrl}
+                            size="sm"
+                          />
+                          <div>
+                            <div className="font-bold text-xs sm:text-sm text-charcoal-900">
+                              {enq.userName || enq.customerName}
+                            </div>
+                            <div className="text-[11px] font-medium text-charcoal-500">
+                              {enq.phone || enq.customerPhone}
+                            </div>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3 px-2">
                         <span className="font-semibold text-xs sm:text-sm text-charcoal-800 line-clamp-1">

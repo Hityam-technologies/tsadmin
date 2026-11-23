@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { BrandGradientBackground } from '../common/BrandGradientBackground';
-import homeLogo from '../../assets/homeLogo.png';
+import { BrandLogo } from '../common/BrandLogo';
 import {
   LayoutDashboard,
   Layers,
@@ -182,20 +182,8 @@ export function AdminLayout({ children }) {
         <aside className="hidden lg:flex w-72 rounded-[28px] bg-white/85 backdrop-blur-xl border border-sand-200/90 shadow-[0_12px_36px_rgba(197,162,83,0.10)] p-5 flex-col justify-between flex-shrink-0 sticky top-5 h-[calc(100dvh-2.5rem)] overflow-hidden">
           <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             {/* Top Brand Header Badge with Royal Saffron Silk Gradient */}
-            <div className="pt-1 pb-5 px-0.5">
-              <div className="relative rounded-2xl p-4 bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_8px_24px_rgba(191,91,33,0.32),0_2px_6px_rgba(0,0,0,0.12)] flex items-center justify-center overflow-hidden group">
-                <div
-                  className="absolute inset-0 pointer-events-none opacity-35"
-                  style={{
-                    background: 'radial-gradient(ellipse at 50% 20%, rgba(255, 235, 195, 0.6) 0%, transparent 70%)',
-                  }}
-                />
-                <img
-                  src={homeLogo}
-                  alt="Tripuraa Sangrahah"
-                  className="relative z-10 w-full max-w-[215px] h-auto max-h-20 object-contain brand-logo-on-saffron transition-transform hover:scale-[1.02]"
-                />
-              </div>
+            <div className="pt-1 pb-5 flex justify-center">
+              <BrandLogo className="h-24 w-24" />
             </div>
 
             {/* Section Header */}
@@ -382,13 +370,7 @@ export function AdminLayout({ children }) {
             <div className="fixed inset-y-0 left-0 w-[min(18rem,88vw)] max-w-[88vw] bg-[#FFFDF0]/95 backdrop-blur-xl p-4 sm:p-5 shadow-2xl flex flex-col justify-between border-r border-gold-200/80 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               <div className="min-h-0 overflow-y-auto">
                 <div className="flex items-center justify-between pb-4 border-b border-sand-200/80 mb-4">
-                  <div className="p-3 rounded-2xl bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/60 shadow-[0_6px_20px_rgba(191,91,33,0.28)] flex-1 mr-3 flex items-center justify-center relative overflow-hidden">
-                    <img
-                      src={homeLogo}
-                      alt="Tripuraa Sangrahah"
-                      className="relative z-10 max-h-12 w-auto max-w-[170px] object-contain brand-logo-on-saffron"
-                    />
-                  </div>
+                  <BrandLogo className="h-14 w-14 mr-3" />
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="p-1.5 rounded-xl text-charcoal-500 hover:bg-sand-100/80 cursor-pointer"

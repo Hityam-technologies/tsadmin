@@ -3,6 +3,7 @@ import { Download, ArrowLeft } from 'lucide-react';
 import { tryOnUsageService } from '../services/tryOnUsageService';
 import { TableSkeleton } from '../components/common/Skeleton';
 import { useToast } from '../context/ToastContext';
+import { CustomerAvatar } from '../components/common/CustomerAvatar';
 
 function money(value) {
   if (value == null || value === '') return '—';
@@ -124,8 +125,13 @@ export function TryOnUsagePage() {
         </button>
         {loading || !person ? <TableSkeleton rows={4} cols={4} /> : (
           <div className="bg-white rounded-[22px] border border-sand-200 p-5">
-            <h1 className="text-xl font-bold text-charcoal-900">{person.name}</h1>
-            <p className="text-xs text-charcoal-500 mt-1">{person.phone} · {person.email}</p>
+            <div className="flex items-center gap-3">
+              <CustomerAvatar name={person.name} avatarUrl={person.avatarUrl} size="lg" />
+              <div>
+                <h1 className="text-xl font-bold text-charcoal-900">{person.name}</h1>
+                <p className="text-xs text-charcoal-500 mt-1">{person.phone} · {person.email}</p>
+              </div>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
               <Stat label="Try-ons done" value={person.tryOnsCompleted} />
               <Stat label="Free left" value={person.freeRemaining} />
@@ -208,8 +214,13 @@ export function TryOnUsagePage() {
                 {(report?.items || []).map((row) => (
                   <tr key={row.userId} className="cursor-pointer hover:bg-sand-50" onClick={() => setUserId(row.userId)}>
                     <td className="px-3 py-3">
-                      <div className="font-semibold text-charcoal-900">{row.name}</div>
-                      <div className="text-[11px] text-charcoal-500">{row.phone}</div>
+                      <div className="flex items-center gap-2.5">
+                        <CustomerAvatar name={row.name} avatarUrl={row.avatarUrl} size="sm" />
+                        <div>
+                          <div className="font-semibold text-charcoal-900">{row.name}</div>
+                          <div className="text-[11px] text-charcoal-500">{row.phone}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-3 py-3">{row.tryOnsCompleted}</td>
                     <td className="px-3 py-3">{row.freeRemaining}</td>

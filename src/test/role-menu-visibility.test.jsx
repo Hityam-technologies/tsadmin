@@ -84,8 +84,7 @@ describe('Admin Navigation & Admin Suite Visibility', () => {
 
     const logoImages = screen.getAllByAltText('Tripuraa Sangrahah');
     expect(logoImages.length).toBeGreaterThan(0);
-    // Primary desktop sidebar logo has the saffron contrast shadow applied for clear visibility
-    expect(logoImages[0]).toHaveClass('brand-logo-on-saffron');
+    expect(logoImages[0].getAttribute('src')).toContain('panel-logo');
   });
 });
 

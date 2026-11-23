@@ -15,6 +15,7 @@ import {
   Eye,
   ChevronRight,
 } from 'lucide-react';
+import { CustomerAvatar } from '../components/common/CustomerAvatar';
 
 export function UsersPage() {
   const { showToast } = useToast();
@@ -176,9 +177,7 @@ export function UsersPage() {
                   >
                     <td className="py-3.5 pl-6 pr-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-sand-100 ring-1 ring-gold-400 flex items-center justify-center text-xs font-bold text-charcoal-500 flex-shrink-0">
-                          {(user.name || '-').charAt(0)}
-                        </div>
+                        <CustomerAvatar name={user.name} avatarUrl={user.avatarUrl} />
                         <div>
                           <div className="font-semibold text-charcoal-900">{user.name}</div>
                           <span className="text-[10px] text-charcoal-400 font-mono">
@@ -278,9 +277,12 @@ export function UsersPage() {
             {/* Profile Overview */}
             <div className="p-4 rounded-xl bg-sand-50 border border-sand-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-sand-100 ring-2 ring-gold-400 flex items-center justify-center font-bold text-charcoal-500">
-                  {(selectedUser.name || '-').charAt(0)}
-                </div>
+                <CustomerAvatar
+                  name={selectedUser.name}
+                  avatarUrl={selectedUser.avatarUrl}
+                  size="lg"
+                  className="ring-2"
+                />
                 <div>
                   <h3 className="font-serif font-bold text-base text-charcoal-900">
                     {selectedUser.name}

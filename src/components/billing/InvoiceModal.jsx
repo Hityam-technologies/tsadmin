@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Modal } from '../common/Modal';
 import { formatINR } from '../../lib/utils';
-import homeLogo from '../../assets/homeLogo.png';
+import { BrandLogo } from '../common/BrandLogo';
 import {
   Printer,
   Download,
@@ -177,12 +177,8 @@ export function InvoiceModal({
         >
           {/* 1. Header: Centered Store Info */}
           <div className="text-center space-y-1 pb-3 border-b border-dashed border-sand-300">
-            <div className="inline-flex p-1.5 rounded-xl bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300 items-center justify-center mb-1">
-              <img
-                src={homeLogo}
-                alt="Tripuraa Sangrahah"
-                className="h-7 w-auto object-contain brand-logo-on-saffron"
-              />
+            <div className="flex justify-center mb-1">
+              <BrandLogo className="h-12 w-12" />
             </div>
             <h2 className="text-base font-serif font-extrabold text-charcoal-900 tracking-tight">
               Tripuraa Sangrahah

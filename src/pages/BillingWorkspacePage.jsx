@@ -96,6 +96,7 @@ export function BillingWorkspacePage() {
     email: '',
     city: 'Hyderabad',
     gstin: '',
+    avatarUrl: '',
     isWalkIn: true,
   });
 
@@ -119,6 +120,7 @@ export function BillingWorkspacePage() {
     email: '',
     city: 'Hyderabad',
     gstin: '',
+    avatarUrl: '',
     isWalkIn: true,
   };
 
@@ -542,6 +544,7 @@ export function BillingWorkspacePage() {
               phone: cust.phone,
               email: cust.email || '',
               city: cust.city || 'Hyderabad',
+              avatarUrl: cust.avatarUrl || '',
               isWalkIn: false,
             });
             setActiveTab('pos');

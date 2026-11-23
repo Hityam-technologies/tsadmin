@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BrandGradientBackground } from '../common/BrandGradientBackground';
-import homeLogo from '../../assets/homeLogo.png';
+import { BrandLogo } from '../common/BrandLogo';
 import {
   LogOut,
   Receipt,
@@ -69,15 +69,7 @@ export function BillingLayout({
              ========================================================================= */}
           <header className="flex-shrink-0 mb-2 flex flex-col lg:flex-row lg:items-center gap-2 w-full">
             {/* 1. SEPARATE BIG BRAND LOGO (Outside the bar on the same line) */}
-            <div className="flex-shrink-0">
-              <div className="h-12 sm:h-16 px-3 sm:px-6 rounded-2xl sm:rounded-[22px] bg-gradient-to-br from-[#DE7335] via-[#BF5B21] to-[#752809] border border-gold-300/70 shadow-[0_6px_20px_rgba(186,79,26,0.25)] flex items-center justify-center">
-                <img
-                  src={homeLogo}
-                  alt="Tripuraa Sangrahah"
-                  className="h-8 sm:h-12 w-auto max-w-[140px] sm:max-w-[240px] md:max-w-[280px] object-contain brand-logo-on-saffron drop-shadow-sm"
-                />
-              </div>
-            </div>
+            <BrandLogo className="h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0" />
 
             {/* 2. THE CUT WHITE TOP BAR: Nav Pills & Actions (starts after logo) */}
             <div className="flex-1 min-w-0 min-h-12 sm:h-16 bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-[22px] border border-sand-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.02)] px-3 sm:px-5 py-2 sm:py-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">

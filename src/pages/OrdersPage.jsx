@@ -3,6 +3,7 @@ import { commerceService } from '../services/commerceService';
 import { systemService } from '../services/systemService';
 import { TableSkeleton } from '../components/common/Skeleton';
 import { useToast } from '../context/ToastContext';
+import { CustomerAvatar } from '../components/common/CustomerAvatar';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -159,8 +160,17 @@ export function OrdersPage() {
                       <div className="text-[11px] text-charcoal-500">{order.dateFormatted}</div>
                     </td>
                     <td className="px-3 py-3">
-                      <div>{order.customerName}</div>
-                      <div className="text-[11px] text-charcoal-500">{order.shippingAddress?.city || '-'}</div>
+                      <div className="flex items-center gap-2">
+                        <CustomerAvatar
+                          name={order.customerName}
+                          avatarUrl={order.customerAvatarUrl || order.avatarUrl}
+                          size="sm"
+                        />
+                        <div>
+                          <div>{order.customerName}</div>
+                          <div className="text-[11px] text-charcoal-500">{order.shippingAddress?.city || '-'}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-3 py-3">{rupees(order.totalAmount)}</td>
                     <td className="px-3 py-3">{order.statusLabel}</td>
@@ -180,10 +190,19 @@ export function OrdersPage() {
               <div>
                 <h2 className="text-lg font-bold text-charcoal-900">{selected.orderNumber}</h2>
                 <p className="text-sm font-semibold text-charcoal-900 mt-1">{rupees(selected.totalAmount)} · {selected.paymentMethod === 'COD' ? 'Cash on delivery' : 'Online'}</p>
-                <p className="text-xs text-charcoal-500 mt-2">{selected.customerName} · {selected.customerPhone}</p>
-                <p className="text-xs text-charcoal-500">
-                  {selected.shippingAddress?.addressLine1}, {selected.shippingAddress?.city} {selected.shippingAddress?.postalCode}
-                </p>
+                <div className="flex items-center gap-2.5 mt-3">
+                  <CustomerAvatar
+                    name={selected.customerName}
+                    avatarUrl={selected.customerAvatarUrl || selected.avatarUrl}
+                  />
+                  <div>
+                    <p className="text-xs text-charcoal-800 font-semibold">{selected.customerName}</p>
+                    <p className="text-xs text-charcoal-500">{selected.customerPhone}</p>
+                    <p className="text-xs text-charcoal-500">
+                      {selected.shippingAddress?.addressLine1}, {selected.shippingAddress?.city} {selected.shippingAddress?.postalCode}
+                    </p>
+                  </div>
+                </div>
               </div>
               <ul className="mt-3 space-y-1 text-xs text-charcoal-800">
                 {selected.items.map((item) => (

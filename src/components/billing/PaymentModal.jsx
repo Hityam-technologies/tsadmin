@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Sparkles,
 } from 'lucide-react';
+import { CustomerAvatar } from '../common/CustomerAvatar';
 
 export function PaymentModal({
   isOpen,
@@ -334,14 +335,20 @@ export function PaymentModal({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
-                    <div>
-                      <h4 className="text-base font-serif font-extrabold text-charcoal-900">
-                        {detectedCustomer.name}
-                      </h4>
-                      <p className="text-xs font-mono text-charcoal-600">
-                        {detectedCustomer.phone} &bull; {detectedCustomer.city || 'Hyderabad'}
-                      </p>
+                  <div className="flex items-center justify-between pt-1 gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <CustomerAvatar
+                        name={detectedCustomer.name}
+                        avatarUrl={detectedCustomer.avatarUrl}
+                      />
+                      <div className="min-w-0">
+                        <h4 className="text-base font-serif font-extrabold text-charcoal-900 truncate">
+                          {detectedCustomer.name}
+                        </h4>
+                        <p className="text-xs font-mono text-charcoal-600">
+                          {detectedCustomer.phone} &bull; {detectedCustomer.city || 'Hyderabad'}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
                       <div className="text-xs font-bold text-charcoal-800">
@@ -447,9 +454,17 @@ export function PaymentModal({
             {/* Customer Summary Bar with Change Button */}
             <div className="p-3 rounded-xl bg-sand-50 border border-sand-200 flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-gold-100 border border-gold-300 flex items-center justify-center text-gold-800 font-bold text-xs flex-shrink-0">
-                  <UserCheck className="w-4 h-4" />
-                </div>
+                {activeCustomer.avatarUrl ? (
+                  <CustomerAvatar
+                    name={activeCustomer.name}
+                    avatarUrl={activeCustomer.avatarUrl}
+                    size="sm"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-gold-100 border border-gold-300 flex items-center justify-center text-gold-800 font-bold text-xs flex-shrink-0">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-charcoal-900 truncate">
