@@ -35,6 +35,44 @@ function imageEntry(value) {
   return { url, key: typeof value === 'object' && value?.key ? value.key : '' };
 }
 
+const STARTER_FEATURES = [
+  { key: 'Body', value: '' },
+  { key: 'Border', value: '' },
+  { key: 'Pallu', value: '' },
+  { key: 'Blouse', value: '' },
+];
+
+function blankFeature() {
+  return { key: '', value: '' };
+}
+
+function featuresFromSaree(saree) {
+  if (Array.isArray(saree?.features) && saree.features.some((item) => item?.key || item?.value)) {
+    return saree.features.map((item) => ({ key: item.key || '', value: item.value || '' }));
+  }
+  const saved = [
+    ['Body', saree?.body],
+    ['Border', saree?.border],
+    ['Pallu', saree?.pallu],
+    ['Blouse', saree?.blouse],
+  ]
+    .filter(([, value]) => String(value || '').trim())
+    .map(([key, value]) => ({ key, value: String(value) }));
+  return saved.length ? saved : [blankFeature()];
+}
+
+function featureRows(list) {
+  return (list || []).map((item) => ({
+    key: String(item?.key || '').trim(),
+    value: String(item?.value || '').trim(),
+  }));
+}
+
+function lineFromFeatures(features, name) {
+  const found = features.find((item) => item.key.toLowerCase() === name);
+  return found ? found.value : '';
+}
+
 function sareePayload(formData) {
   const images = (formData.images || []).map(imageUrl).filter(Boolean);
   const slug = formData.slug
@@ -57,10 +95,11 @@ function sareePayload(formData) {
     productCode: formData.productCode || '',
     codeParts: formData.codeParts || '',
     collectionLine: formData.collectionLine || '',
-    body: formData.body || '',
-    border: formData.border || '',
-    pallu: formData.pallu || '',
-    blouse: formData.blouse || '',
+    features: featureRows(formData.features).filter((item) => item.key && item.value),
+    body: lineFromFeatures(featureRows(formData.features), 'body'),
+    border: lineFromFeatures(featureRows(formData.features), 'border'),
+    pallu: lineFromFeatures(featureRows(formData.features), 'pallu'),
+    blouse: lineFromFeatures(featureRows(formData.features), 'blouse'),
     bookingTitle: formData.bookingTitle || '',
     codeLegend: formData.codeLegend || '',
     footerLine: formData.footerLine || '',
@@ -116,10 +155,7 @@ export function SareesPage() {
     productCode: '',
     codeParts: '',
     collectionLine: '',
-    body: '',
-    border: '',
-    pallu: '',
-    blouse: '',
+    features: STARTER_FEATURES.map((item) => ({ ...item })),
     bookingTitle: '',
     codeLegend: '',
     footerLine: '',
@@ -252,10 +288,7 @@ export function SareesPage() {
       productCode: '',
       codeParts: '',
       collectionLine: '',
-      body: '',
-      border: '',
-      pallu: '',
-      blouse: '',
+      features: STARTER_FEATURES.map((item) => ({ ...item })),
       bookingTitle: '',
       codeLegend: '',
       footerLine: '',
@@ -284,6 +317,7 @@ export function SareesPage() {
       images: images.length ? images : [imageUrl(saree.image)].filter(Boolean),
       image: imageUrl(saree.image),
       tryOnImage: imageUrl(saree.tryOnImage),
+      features: featuresFromSaree(saree),
     });
     setNewImageUrl('');
     setIsEditorOpen(true);
@@ -322,6 +356,13 @@ export function SareesPage() {
     e.preventDefault();
     if (!formData.title.trim()) {
       showToast('Please enter a saree title', 'error');
+      return;
+    }
+    const halfFilled = featureRows(formData.features).some(
+      (item) => (item.key && !item.value) || (!item.key && item.value),
+    );
+    if (halfFilled) {
+      showToast('Each feature needs a name and a value. Blouse is the name, the silk line is the value.', 'error');
       return;
     }
 
@@ -410,7 +451,7 @@ export function SareesPage() {
             Master Saree Collections
           </h1>
           <p className="text-xs sm:text-sm text-charcoal-500 mt-1 font-medium">
-            Each saree is a photo, a code, a story, and the body, border, pallu, and blouse lines.
+            Each saree is a photo, a code, a story, and any feature lines you add, such as Blouse.
           </p>
         </div>
 
@@ -705,7 +746,7 @@ export function SareesPage() {
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
         title={editingSaree ? `Edit Saree: ${editingSaree.title}` : 'Catalog New Heirloom Saree'}
-        subtitle="Photo, code, story, and the body, border, pallu, and blouse lines."
+        subtitle="Photo, code, story, and any feature lines you add."
         maxWidth="max-w-4xl"
       >
         <form onSubmit={handleSaveSaree} className="space-y-6 pt-2">
@@ -754,16 +795,66 @@ export function SareesPage() {
                 className="w-full rounded-lg border border-sand-300 p-2 text-xs bg-white"
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                ['body', 'Body', 'Dark brown with large gold leaf / paisley buttas'],
-                ['border', 'Border', 'Gap Border — thin elegant gold zari lines with gap'],
-                ['pallu', 'Pallu', 'Rich gold geometric checks + gold border + black tassels'],
-                ['blouse', 'Blouse', 'Dark brown with gold gap border'],
-              ].map(([key, label, placeholder]) => (
-                <div key={key}>
-                  <label className="block text-[11px] font-medium text-charcoal-700 mb-1">{label}</label>
-                  <input type="text" value={formData[key] || ''} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} placeholder={placeholder} className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white" />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <span className="block text-[11px] font-medium text-charcoal-700">Features</span>
+                  <p className="text-[11px] text-charcoal-500 mt-0.5">
+                    Type a name, such as Blouse, then the line that goes with it. Add as many as this saree needs.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData((current) => ({
+                    ...current,
+                    features: [...(current.features || []), blankFeature()],
+                  }))}
+                  className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-gold-300 text-xs font-semibold text-gold-900 hover:bg-gold-50"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add
+                </button>
+              </div>
+              {(formData.features || []).map((feature, index) => (
+                <div key={index} className="grid grid-cols-1 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_auto] gap-2 items-end">
+                  <div>
+                    <label className="block text-[11px] font-medium text-charcoal-700 mb-1">Name</label>
+                    <input
+                      type="text"
+                      value={feature.key}
+                      onChange={(e) => setFormData((current) => {
+                        const features = [...(current.features || [])];
+                        features[index] = { ...features[index], key: e.target.value };
+                        return { ...current, features };
+                      })}
+                      placeholder="Blouse"
+                      className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-charcoal-700 mb-1">Value</label>
+                    <input
+                      type="text"
+                      value={feature.value}
+                      onChange={(e) => setFormData((current) => {
+                        const features = [...(current.features || [])];
+                        features[index] = { ...features[index], value: e.target.value };
+                        return { ...current, features };
+                      })}
+                      placeholder="Scarlet silk with a gold border"
+                      className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Remove feature ${index + 1}`}
+                    onClick={() => setFormData((current) => {
+                      const features = (current.features || []).filter((_, row) => row !== index);
+                      return { ...current, features: features.length ? features : [blankFeature()] };
+                    })}
+                    className="h-8 w-8 rounded-lg border border-sand-300 text-charcoal-500 hover:text-maroon-700 hover:bg-maroon-50 flex items-center justify-center"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
             </div>

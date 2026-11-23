@@ -35,19 +35,9 @@ export const categoryService = {
    * Delete Category
    * API: DELETE /admin/categories/:id
    */
-  async deleteCategory(id, options = {}) {
-    const reassignTo = typeof options === 'string' ? options : options.reassignTo;
-    const removeSarees = typeof options === 'object' && options.removeSarees === true;
+  async deleteCategory(id) {
     return apiRequest(`/admin/categories/${encodeURIComponent(id)}`, {
       method: 'DELETE',
-      query: {
-        reassignTo: removeSarees ? undefined : reassignTo,
-        removeSarees: removeSarees ? 'true' : undefined,
-      },
-      body: JSON.stringify({
-        reassignTo: removeSarees ? '' : (reassignTo || ''),
-        removeSarees,
-      }),
     });
   },
 
