@@ -26,6 +26,7 @@ export function CategoriesPage() {
 
   // Delete
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [reassignTo, setReassignTo] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -123,18 +124,22 @@ export function CategoriesPage() {
 
   const handleDelete = (id) => {
     setDeleteTargetId(id);
+    const other = categories.find((category) => category.id !== id);
+    setReassignTo(other?.id || '');
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
     setIsSubmitting(true);
-    const res = await categoryService.deleteCategory(deleteTargetId);
+    const res = await categoryService.deleteCategory(deleteTargetId, reassignTo || undefined);
     if (res.success) {
       showToast('Category deleted', 'success');
       setIsDeleteDialogOpen(false);
       setDeleteTargetId(null);
       loadCategories();
+    } else {
+      showToast(res.error?.message || 'That category could not be deleted', 'error');
     }
     setIsSubmitting(false);
   };
@@ -390,10 +395,33 @@ export function CategoriesPage() {
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Category"
-        description="Are you sure you wish to delete this collection category? Saree listings will lose their primary story tag."
+        description="Sarees in this category move to the category you choose, then this category is removed."
         confirmText="Confirm Delete"
         isLoading={isSubmitting}
-      />
+      >
+        {categories.filter((category) => category.id !== deleteTargetId).length ? (
+          <label className="block">
+            <span className="block text-xs font-semibold text-charcoal-800 mb-1">Move its sarees to</span>
+            <select
+              value={reassignTo}
+              onChange={(event) => setReassignTo(event.target.value)}
+              className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs bg-white"
+            >
+              {categories
+                .filter((category) => category.id !== deleteTargetId)
+                .map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.label}
+                  </option>
+                ))}
+            </select>
+          </label>
+        ) : (
+          <p className="text-xs text-charcoal-500">
+            This is the only category. If sarees still use it, create another category first.
+          </p>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

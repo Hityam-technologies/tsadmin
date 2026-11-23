@@ -12,6 +12,7 @@ export function ConfirmDialog({
   cancelText = 'Cancel',
   variant = 'danger',
   isLoading = false,
+  children,
 }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-md">
@@ -29,9 +30,10 @@ export function ConfirmDialog({
         <h3 className="font-serif text-lg font-bold text-charcoal-900 mb-2">
           {title}
         </h3>
-        <p className="text-xs text-charcoal-500 mb-6 leading-relaxed">
+        <p className="text-xs text-charcoal-500 mb-4 leading-relaxed">
           {description}
         </p>
+        {children ? <div className="mb-6 text-left">{children}</div> : <div className="mb-2" />}
 
         <div className="flex items-center justify-center gap-3">
           <button

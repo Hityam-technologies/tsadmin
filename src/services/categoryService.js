@@ -35,8 +35,11 @@ export const categoryService = {
    * Delete Category
    * API: DELETE /admin/categories/:id
    */
-  async deleteCategory(id) {
-    return apiRequest(`/admin/categories/${id}`, { method: 'DELETE' });
+  async deleteCategory(id, reassignTo) {
+    return apiRequest(`/admin/categories/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      body: reassignTo ? JSON.stringify({ reassignTo }) : undefined,
+    });
   },
 
   /**
