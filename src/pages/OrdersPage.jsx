@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { commerceService } from '../services/commerceService';
+import { systemService } from '../services/systemService';
 import { TableSkeleton } from '../components/common/Skeleton';
 import { useToast } from '../context/ToastContext';
 
@@ -30,6 +31,8 @@ export function OrdersPage() {
   const [status, setStatus] = useState('all');
   const [selectedId, setSelectedId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [orderLimit, setOrderLimit] = useState('99');
+  const [savingLimit, setSavingLimit] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -40,6 +43,33 @@ export function OrdersPage() {
   }, [search, status, showToast]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    async function loadLimit() {
+      const res = await systemService.getConfig();
+      if (res.success && res.data?.maxOrderQuantity) {
+        setOrderLimit(String(res.data.maxOrderQuantity));
+      }
+    }
+    loadLimit();
+  }, []);
+
+  const saveLimit = async () => {
+    const next = Math.floor(Number(orderLimit));
+    if (!Number.isFinite(next) || next < 1 || next > 999) {
+      showToast('Enter a whole number from 1 to 999.', 'error');
+      return;
+    }
+    setSavingLimit(true);
+    const res = await systemService.updateConfig({ maxOrderQuantity: next });
+    setSavingLimit(false);
+    if (!res.success) {
+      showToast(res.error?.message || 'The order limit was not saved.', 'error');
+      return;
+    }
+    setOrderLimit(String(res.data.maxOrderQuantity));
+    showToast(`Customers can choose up to ${res.data.maxOrderQuantity} of one item.`, 'success');
+  };
 
   const selected = orders.find((order) => order.id === selectedId) || null;
 
@@ -63,6 +93,33 @@ export function OrdersPage() {
         <p className="text-sm text-charcoal-500 mt-1">
           Open an order, then move it. The customer’s tracking screen uses the same steps.
         </p>
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="flex-1 max-w-xs">
+            <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+              Maximum pieces of one item
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="999"
+              step="1"
+              value={orderLimit}
+              onChange={(event) => setOrderLimit(event.target.value)}
+              className="w-full rounded-xl border border-sand-300 px-3 py-2 text-sm"
+            />
+            <p className="text-[11px] text-charcoal-500 mt-1">
+              The shop bag and the billing counter stop at this number.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={savingLimit}
+            onClick={saveLimit}
+            className="rounded-xl bg-charcoal-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+          >
+            {savingLimit ? 'Saving…' : 'Save limit'}
+          </button>
+        </div>
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
