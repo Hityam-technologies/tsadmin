@@ -27,6 +27,7 @@ export function CategoriesPage() {
   // Delete
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [reassignTo, setReassignTo] = useState('');
+  const [deleteMode, setDeleteMode] = useState('move');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -126,15 +127,23 @@ export function CategoriesPage() {
     setDeleteTargetId(id);
     const other = categories.find((category) => category.id !== id);
     setReassignTo(other?.id || '');
+    setDeleteMode(other ? 'move' : 'remove');
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
     setIsSubmitting(true);
-    const res = await categoryService.deleteCategory(deleteTargetId, reassignTo || undefined);
+    const res = await categoryService.deleteCategory(deleteTargetId, {
+      reassignTo: deleteMode === 'move' ? reassignTo : undefined,
+      removeSarees: deleteMode === 'remove',
+    });
     if (res.success) {
-      showToast('Category deleted', 'success');
+      const removed = res.data?.removedSarees || 0;
+      showToast(
+        removed ? `Category deleted and ${removed} saree${removed === 1 ? '' : 's'} removed` : 'Category deleted',
+        'success',
+      );
       setIsDeleteDialogOpen(false);
       setDeleteTargetId(null);
       loadCategories();
@@ -395,13 +404,23 @@ export function CategoriesPage() {
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Category"
-        description="Sarees in this category move to the category you choose, then this category is removed."
+        description="Choose what happens to the sarees in this category, then the category is removed."
         confirmText="Confirm Delete"
         isLoading={isSubmitting}
       >
-        {categories.filter((category) => category.id !== deleteTargetId).length ? (
-          <label className="block">
-            <span className="block text-xs font-semibold text-charcoal-800 mb-1">Move its sarees to</span>
+        <div className="space-y-3">
+          <label className="flex items-start gap-2 text-xs text-charcoal-800">
+            <input
+              type="radio"
+              name="category-delete-mode"
+              checked={deleteMode === 'move'}
+              onChange={() => setDeleteMode('move')}
+              disabled={!categories.some((category) => category.id !== deleteTargetId)}
+              className="mt-0.5"
+            />
+            <span>Move its sarees to another category</span>
+          </label>
+          {deleteMode === 'move' && categories.some((category) => category.id !== deleteTargetId) ? (
             <select
               value={reassignTo}
               onChange={(event) => setReassignTo(event.target.value)}
@@ -415,12 +434,18 @@ export function CategoriesPage() {
                   </option>
                 ))}
             </select>
+          ) : null}
+          <label className="flex items-start gap-2 text-xs text-charcoal-800">
+            <input
+              type="radio"
+              name="category-delete-mode"
+              checked={deleteMode === 'remove'}
+              onChange={() => setDeleteMode('remove')}
+              className="mt-0.5"
+            />
+            <span>Remove the sarees in this category from the catalog</span>
           </label>
-        ) : (
-          <p className="text-xs text-charcoal-500">
-            This is the only category. If sarees still use it, create another category first.
-          </p>
-        )}
+        </div>
       </ConfirmDialog>
     </div>
   );
