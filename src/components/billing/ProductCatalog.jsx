@@ -23,12 +23,7 @@ export function ProductCatalog({
     }
   }, []);
 
-  // Filter products locally for instant 0ms latency UI responsiveness
-  // STRICT RULE: Items that got sold out (stockQuantity <= 0) are NOT shown in the POS billing catalog, only in the Sold Out Archive!
   const filteredProducts = products.filter((item) => {
-    const stock = Number(item.stockQuantity) || 0;
-    if (stock <= 0) return false;
-
     const q = search.trim().toLowerCase();
     const matchesQuery =
       !q ||
@@ -53,10 +48,10 @@ export function ProductCatalog({
           String(p.productCode || '').toLowerCase() === search.trim().toLowerCase() ||
           p.id.toLowerCase() === search.trim().toLowerCase()
       );
-      if (exactMatch && (exactMatch.stockQuantity || 0) > 0) {
+      if (exactMatch) {
         onAddToCart(exactMatch);
         setSearch('');
-      } else if (filteredProducts.length === 1 && (filteredProducts[0].stockQuantity || 0) > 0) {
+      } else if (filteredProducts.length === 1) {
         onAddToCart(filteredProducts[0]);
         setSearch('');
       }
@@ -177,10 +172,7 @@ export function ProductCatalog({
         ) : (
           <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 pb-4">
             {filteredProducts.map((product) => {
-              const stock = Number(product.stockQuantity) || 0;
               const cartQty = getCartQuantity(product.id);
-              const isOutOfStock = stock === 0;
-              const isAtMaxStock = cartQty >= stock;
               const image =
                 (typeof product.images?.[0] === 'string'
                   ? product.images[0]
@@ -218,16 +210,6 @@ export function ProductCatalog({
                       #{product.productCode || '100001'}
                     </span>
 
-                    {/* Stock Alert - Only if Low Stock or Out of Stock */}
-                    {isOutOfStock ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-maroon-700/95 text-white backdrop-blur-md shadow-sm">
-                        Sold Out
-                      </span>
-                    ) : stock <= 2 ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-saffron-600/95 text-white backdrop-blur-md shadow-sm">
-                        Only {stock} Left
-                      </span>
-                    ) : null}
                   </div>
 
                   {/* Bottom Gradient Overlay (Smoothly fades in from bottom) */}
@@ -258,13 +240,8 @@ export function ProductCatalog({
                       <button
                         type="button"
                         onClick={() => onAddToCart(product)}
-                        disabled={isOutOfStock || isAtMaxStock}
                         className={`flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md ${
-                          isOutOfStock
-                            ? 'bg-charcoal-700/80 text-charcoal-400 cursor-not-allowed border border-white/10'
-                            : isAtMaxStock
-                            ? 'bg-charcoal-700/80 text-charcoal-300 cursor-not-allowed border border-white/10'
-                            : cartQty > 0
+                          cartQty > 0
                             ? 'bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-extrabold shadow-gold-500/30'
                             : 'bg-white hover:bg-gold-50 text-charcoal-950'
                         }`}

@@ -18,6 +18,7 @@ export function CartDrawer({
   onAddCustomItem,
   totals,
   onProceedToPayment,
+  maxQuantity = 99,
 }) {
   // Custom Add-on input state
   const [isCustomFormOpen, setIsCustomFormOpen] = useState(false);
@@ -147,7 +148,7 @@ export function CartDrawer({
                 <button
                   type="button"
                   onClick={() => onUpdateQuantity(item.sareeId, item.quantity + 1)}
-                  disabled={item.quantity >= (item.availableStock || 99)}
+                  disabled={item.quantity >= maxQuantity}
                   className="w-6 h-6 rounded flex items-center justify-center hover:bg-white text-charcoal-700 disabled:opacity-30 transition-colors cursor-pointer"
                   aria-label="Increase quantity"
                 >

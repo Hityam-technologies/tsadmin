@@ -88,6 +88,7 @@ export function BillingWorkspacePage() {
 
   // Live Bill / Cart State
   const [cartItems, setCartItems] = useState([]);
+  const [orderLimit, setOrderLimit] = useState(99);
   const [selectedServices, setSelectedServices] = useState([]);
   const [customer, setCustomer] = useState({
     name: 'Walk-in Guest',
@@ -151,7 +152,8 @@ export function BillingWorkspacePage() {
     setCatalogLoading(true);
     setCatalogError('');
     try {
-      await billingService.refreshRegister();
+      const register = await billingService.refreshRegister();
+      if (register?.maxOrderQuantity >= 1) setOrderLimit(register.maxOrderQuantity);
       const catalog = await billingService.fetchRegisterCatalog();
       setProducts(catalog.products);
       setCategories(catalog.categories);
@@ -175,22 +177,13 @@ export function BillingWorkspacePage() {
 
   // Cart Operations
   const handleAddToCart = (product) => {
-    const available = product.stockQuantity || 0;
-    if (available <= 0) {
-      showToast(`"${product.title}" is out of stock`, 'warning');
-      return;
-    }
-
     setCartItems((prev) => {
       const existing = prev.find((item) => item.sareeId === product.id);
       if (existing) {
-        if (existing.quantity >= available) {
-          showToast(`Cannot add more. Only ${available} in stock.`, 'warning');
-          return prev;
-        }
+        const quantity = Math.min(orderLimit, existing.quantity + 1);
         return prev.map((item) =>
           item.sareeId === product.id
-            ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
+            ? { ...item, quantity, subtotal: quantity * item.price }
             : item
         );
       }
@@ -205,7 +198,6 @@ export function BillingWorkspacePage() {
           price: product.numericPrice || product.price,
           mrp: product.numericMrp || product.mrp || product.price,
           quantity: 1,
-          availableStock: available,
           image: (product.images && product.images[0]) || product.image,
           hsnCode: '5007',
           discount: 0,
@@ -226,7 +218,7 @@ export function BillingWorkspacePage() {
     setCartItems((prev) =>
       prev.map((item) => {
         if (item.sareeId === sareeId) {
-          const clamped = Math.min(newQty, item.availableStock || 99);
+          const clamped = Math.min(newQty, orderLimit);
           return {
             ...item,
             quantity: clamped,
@@ -256,7 +248,6 @@ export function BillingWorkspacePage() {
       price: numPrice,
       mrp: numPrice,
       quantity: 1,
-      availableStock: 99,
       image: '',
       hsnCode: '9988',
       discount: 0,
@@ -501,6 +492,7 @@ export function BillingWorkspacePage() {
               onClearCart={handleClearCart}
               onAddCustomItem={handleAddCustomItem}
               totals={totals}
+              maxQuantity={orderLimit}
               onProceedToPayment={() => setIsPaymentOpen(true)}
             />
           </div>

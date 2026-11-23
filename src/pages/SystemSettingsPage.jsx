@@ -21,6 +21,7 @@ function readConfig(data) {
     tryOnModel: data?.tryOnModel || 'tryon-v1.6',
     tryOnDailyLimitPerUser: data?.tryOnDailyLimitPerUser ?? 20,
     gstRate: data?.gstRate ?? 5,
+    maxOrderQuantity: data?.maxOrderQuantity ?? 99,
     featureFlags: {
       enableTryOn: tryOnOn,
       enableBespokeConcierge: flags.enableBespokeConcierge !== false,
@@ -71,6 +72,7 @@ export function SystemSettingsPage() {
       tryOnModel: config.tryOnModel || 'tryon-v1.6',
       tryOnDailyLimitPerUser: Number(config.tryOnDailyLimitPerUser) || 20,
       gstRate: Number(config.gstRate) || 0,
+      maxOrderQuantity: Math.min(999, Math.max(1, Number(config.maxOrderQuantity) || 99)),
       featureFlags: {
         enableTryOn: Boolean(config.featureFlags?.enableTryOn),
         enableBespokeConcierge: Boolean(config.featureFlags?.enableBespokeConcierge),
@@ -198,6 +200,23 @@ export function SystemSettingsPage() {
               />
               <span className="text-[10px] text-charcoal-400 mt-1 block">
                 Inclusive GST used on the next bill. Completed invoices keep the rate they were raised with.
+              </span>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+                Maximum pieces of one item on an order
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="999"
+                step="1"
+                value={config.maxOrderQuantity ?? 99}
+                onChange={(e) => setConfig({ ...config, maxOrderQuantity: e.target.value })}
+                className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs text-charcoal-900"
+              />
+              <span className="text-[10px] text-charcoal-400 mt-1 block">
+                The shop bag and the billing counter stop at this number. The customer still chooses how many they want, up to this limit.
               </span>
             </div>
             <CashierPinForm />

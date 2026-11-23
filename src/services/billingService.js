@@ -4,6 +4,7 @@ import { billingRequest, readBillingToken, writeBillingToken } from './billingAp
 const BILLING_SESSION_KEY = 'ts_billing_staff_session';
 
 let activeGstRate = 5;
+let activeMaxOrderQuantity = 99;
 let liveServices = [];
 
 export const billingService = {
@@ -109,10 +110,12 @@ export const billingService = {
     if (settings.success && Number.isFinite(Number(settings.data?.gstRate))) {
       activeGstRate = Number(settings.data.gstRate);
     }
+    const limit = Math.floor(Number(settings.data?.maxOrderQuantity));
+    if (settings.success && limit >= 1) activeMaxOrderQuantity = Math.min(999, limit);
     if (services.success && Array.isArray(services.data?.services)) {
       liveServices = services.data.services;
     }
-    return { gstRate: activeGstRate };
+    return { gstRate: activeGstRate, maxOrderQuantity: activeMaxOrderQuantity };
   },
 
   async listCategories() {

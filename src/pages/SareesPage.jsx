@@ -103,11 +103,6 @@ function sareePayload(formData) {
     bookingTitle: formData.bookingTitle || '',
     codeLegend: formData.codeLegend || '',
     footerLine: formData.footerLine || '',
-    stock: Number(formData.stockQuantity) > 0 ? 'In Stock' : 'Out of Stock',
-    stockQuantity:
-      formData.stockQuantity === '' || formData.stockQuantity == null
-        ? undefined
-        : Number(formData.stockQuantity),
     images: (formData.images || []).map(imageEntry).filter(Boolean),
     image: images[0] || imageUrl(formData.image) || undefined,
     tryOnImage: imageUrl(formData.tryOnImage) || images[0] || undefined,
@@ -176,19 +171,6 @@ export function SareesPage() {
   // New Image URL input inside uploader
   const [newImageUrl, setNewImageUrl] = useState('');
   const [uploadingImages, setUploadingImages] = useState(false);
-
-  const changeQuantity = async (saree, delta) => {
-    const next = Math.max(0, Number(saree.stockQuantity || 0) + delta);
-    const res = await sareeService.updateSaree(saree.id, {
-      stockQuantity: next,
-      stock: next > 0 ? 'In Stock' : 'Out of Stock',
-    });
-    if (res.success) {
-      fetchSarees();
-    } else {
-      showToast(res.error?.message || 'Could not update the quantity', 'error');
-    }
-  };
 
   const uploadDeviceImages = async (event) => {
     const files = Array.from(event.target.files || []);
@@ -595,7 +577,6 @@ export function SareesPage() {
                   </th>
                   <th className="py-3.5 px-3">Saree</th>
                   <th className="py-3.5 px-3">Code</th>
-                  <th className="py-3.5 px-3 text-center">Qty</th>
                   <th className="py-3.5 px-3 text-center">Active</th>
                   <th className="py-3.5 pl-3 pr-6 text-right">Actions</th>
                 </tr>
@@ -648,53 +629,24 @@ export function SareesPage() {
                         <span className="text-[10px] text-charcoal-400 block">{dash(saree.codeParts)}</span>
                       </td>
 
-                      <td className="py-3.5 px-3">
-                        <div className="inline-flex items-center justify-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => changeQuantity(saree, -1)}
-                            className="h-7 w-7 rounded-lg border border-sand-300 text-charcoal-700 hover:bg-sand-100"
-                            aria-label="Decrease quantity"
-                          >
-                            −
-                          </button>
-                          <span className="min-w-6 text-center font-semibold">{Number(saree.stockQuantity) || 0}</span>
-                          <button
-                            type="button"
-                            onClick={() => changeQuantity(saree, 1)}
-                            className="h-7 w-7 rounded-lg border border-sand-300 text-charcoal-700 hover:bg-sand-100"
-                            aria-label="Increase quantity"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-
-                      {/* Published while stock remains. A sold-out saree is not shown as active. */}
                       <td className="py-3.5 px-3 text-center">
-                        {Number(saree.stockQuantity) <= 0 || saree.stock === 'Out of Stock' ? (
-                          <span className="inline-flex items-center rounded-full bg-sand-100 px-2.5 py-1 text-[11px] font-semibold text-charcoal-500">
-                            Sold out
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              sareeService
-                                .updateSaree(saree.id, { isActive: !saree.isActive })
-                                .then(() => fetchSarees())
-                            }
-                            className={`w-9 h-5 rounded-full p-0.5 transition-colors inline-block ${
-                              saree.isActive ? 'bg-gold-600' : 'bg-sand-300'
+                        <button
+                          type="button"
+                          onClick={() =>
+                            sareeService
+                              .updateSaree(saree.id, { isActive: !saree.isActive })
+                              .then(() => fetchSarees())
+                          }
+                          className={`w-9 h-5 rounded-full p-0.5 transition-colors inline-block ${
+                            saree.isActive ? 'bg-gold-600' : 'bg-sand-300'
+                          }`}
+                        >
+                          <div
+                            className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                              saree.isActive ? 'translate-x-4' : 'translate-x-0'
                             }`}
-                          >
-                            <div
-                              className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                                saree.isActive ? 'translate-x-4' : 'translate-x-0'
-                              }`}
-                            />
-                          </button>
-                        )}
+                          />
+                        </button>
                       </td>
 
                       {/* Actions */}
@@ -872,7 +824,7 @@ export function SareesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[11px] font-medium text-charcoal-700 mb-1">Price (₹)</label>
               <input
@@ -892,38 +844,6 @@ export function SareesPage() {
                 onChange={(e) => setFormData({ ...formData, numericMrp: e.target.value })}
                 className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white"
               />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-charcoal-700 mb-1">Quantity in stock</label>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setFormData({
-                    ...formData,
-                    stockQuantity: Math.max(0, Number(formData.stockQuantity || 0) - 1),
-                  })}
-                  className="h-8 w-8 rounded-lg border border-sand-300"
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.stockQuantity}
-                  onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-                  className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white text-center"
-                />
-                <button
-                  type="button"
-                  onClick={() => setFormData({
-                    ...formData,
-                    stockQuantity: Number(formData.stockQuantity || 0) + 1,
-                  })}
-                  className="h-8 w-8 rounded-lg border border-sand-300"
-                >
-                  +
-                </button>
-              </div>
             </div>
           </div>
 
