@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { contentService } from '../services/contentService';
+import { mediaService } from '../services/mediaService';
 import { useToast } from '../context/ToastContext';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
@@ -17,6 +18,7 @@ import {
   Trash2,
   Edit,
   Eye,
+  Upload,
 } from 'lucide-react';
 
 export function ContentStudioPage() {
@@ -30,6 +32,10 @@ export function ContentStudioPage() {
     subtitle: '',
     videoUrl: '',
     posterUrl: '',
+    logoUrl: '',
+    videoFileId: '',
+    posterFileId: '',
+    logoFileId: '',
     autoPlay: true,
     loop: true,
     isActive: true,
@@ -73,13 +79,14 @@ export function ContentStudioPage() {
   const [legalType, setLegalType] = useState('terms'); // 'terms' | 'policy'
   const [legalSections, setLegalSections] = useState([]);
   const [previewMarkdown, setPreviewMarkdown] = useState(false);
+  const [uploadingHero, setUploadingHero] = useState('');
 
   // Load active tab data
   useEffect(() => {
     async function loadData() {
       if (activeTab === 'hero') {
         const res = await contentService.getHeroVideo();
-        if (res.success) setHeroVideo(res.data);
+        if (res.success && res.data) setHeroVideo((current) => ({ ...current, ...res.data }));
       } else if (activeTab === 'store') {
         const res = await contentService.getStoreAddress();
         if (res.success) setStoreAddress(res.data);
@@ -110,6 +117,29 @@ export function ContentStudioPage() {
     e.preventDefault();
     const res = await contentService.updateHeroVideo(heroVideo);
     if (res.success) showToast('Hero video reel updated successfully', 'success');
+    else showToast(res.error?.message || 'The home screen could not be saved', 'error');
+  };
+
+  const uploadHeroFile = async (event, kind) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setUploadingHero(kind);
+    const res = kind === 'video'
+      ? await mediaService.uploadHeroVideo(file)
+      : await mediaService.uploadImage(file, 'hero');
+    setUploadingHero('');
+    if (!res.success) {
+      showToast(res.error?.message || 'Upload failed', 'error');
+      return;
+    }
+    const saved = res.data || {};
+    setHeroVideo((current) => {
+      if (kind === 'video') return { ...current, videoUrl: saved.url, videoFileId: saved.fileId || '' };
+      if (kind === 'poster') return { ...current, posterUrl: saved.url, posterFileId: saved.fileId || '' };
+      return { ...current, logoUrl: saved.url, logoFileId: saved.fileId || '' };
+    });
+    showToast('Stored in ImageKit. Press Save to show it on the home screen.', 'success');
   };
 
   // Save Store Address
@@ -331,26 +361,57 @@ export function ContentStudioPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                  MP4 / HLS Video URL
+                  Home video
                 </label>
                 <input
                   type="url"
-                  value={heroVideo.videoUrl}
+                  value={heroVideo.videoUrl || ''}
                   onChange={(e) => setHeroVideo({ ...heroVideo, videoUrl: e.target.value })}
+                  placeholder="ImageKit video URL"
                   className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500 font-mono text-[11px]"
                 />
+                <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gold-600 text-white text-xs font-semibold cursor-pointer">
+                  <Upload className="w-3.5 h-3.5" />
+                  {uploadingHero === 'video' ? 'Uploading video...' : 'Upload video from device'}
+                  <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => uploadHeroFile(e, 'video')} />
+                </label>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                  Fallback Poster Image URL
+                  Poster image
                 </label>
                 <input
                   type="url"
-                  value={heroVideo.posterUrl}
+                  value={heroVideo.posterUrl || ''}
                   onChange={(e) => setHeroVideo({ ...heroVideo, posterUrl: e.target.value })}
                   className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500 font-mono text-[11px]"
                 />
+                <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-sand-300 text-xs font-semibold cursor-pointer">
+                  <Upload className="w-3.5 h-3.5" />
+                  {uploadingHero === 'poster' ? 'Uploading poster...' : 'Upload poster from device'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => uploadHeroFile(e, 'poster')} />
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+                  Home logo
+                </label>
+                <input
+                  type="url"
+                  value={heroVideo.logoUrl || ''}
+                  onChange={(e) => setHeroVideo({ ...heroVideo, logoUrl: e.target.value })}
+                  className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500 font-mono text-[11px]"
+                />
+                {heroVideo.logoUrl ? (
+                  <img src={heroVideo.logoUrl} alt="Home logo" className="mt-2 h-12 object-contain" />
+                ) : null}
+                <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-sand-300 text-xs font-semibold cursor-pointer">
+                  <Upload className="w-3.5 h-3.5" />
+                  {uploadingHero === 'logo' ? 'Uploading logo...' : 'Upload logo from device'}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => uploadHeroFile(e, 'logo')} />
+                </label>
               </div>
 
               <div className="flex items-center gap-6 pt-2">

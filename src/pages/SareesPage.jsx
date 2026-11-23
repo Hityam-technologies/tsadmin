@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { sareeService } from '../services/sareeService';
 import { categoryService } from '../services/categoryService';
+import { mediaService } from '../services/mediaService';
 import { useToast } from '../context/ToastContext';
 import { Modal } from '../components/common/Modal';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
@@ -19,12 +20,19 @@ import {
   ArrowDown,
   Sparkles,
   ShoppingBag,
+  Upload,
 } from 'lucide-react';
 
 function imageUrl(value) {
   if (!value) return '';
   if (typeof value === 'string') return value;
   return value.url || '';
+}
+
+function imageEntry(value) {
+  const url = imageUrl(value);
+  if (!url) return null;
+  return { url, key: typeof value === 'object' && value?.key ? value.key : '' };
 }
 
 function sareePayload(formData) {
@@ -56,12 +64,12 @@ function sareePayload(formData) {
     bookingTitle: formData.bookingTitle || '',
     codeLegend: formData.codeLegend || '',
     footerLine: formData.footerLine || '',
-    stock: formData.stock || undefined,
+    stock: Number(formData.stockQuantity) > 0 ? 'In Stock' : 'Out of Stock',
     stockQuantity:
       formData.stockQuantity === '' || formData.stockQuantity == null
         ? undefined
         : Number(formData.stockQuantity),
-    images,
+    images: (formData.images || []).map(imageEntry).filter(Boolean),
     image: images[0] || imageUrl(formData.image) || undefined,
     tryOnImage: imageUrl(formData.tryOnImage) || images[0] || undefined,
     isFeatured: Boolean(formData.isFeatured),
@@ -131,6 +139,36 @@ export function SareesPage() {
 
   // New Image URL input inside uploader
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploadingImages, setUploadingImages] = useState(false);
+
+  const changeQuantity = async (saree, delta) => {
+    const next = Math.max(0, Number(saree.stockQuantity || 0) + delta);
+    const res = await sareeService.updateSaree(saree.id, {
+      stockQuantity: next,
+      stock: next > 0 ? 'In Stock' : 'Out of Stock',
+    });
+    if (res.success) {
+      fetchSarees();
+    } else {
+      showToast(res.error?.message || 'Could not update the quantity', 'error');
+    }
+  };
+
+  const uploadDeviceImages = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    if (!files.length) return;
+    setUploadingImages(true);
+    const res = await mediaService.uploadSareeImages(files);
+    setUploadingImages(false);
+    if (!res.success) {
+      showToast(res.error?.message || 'The photo could not be uploaded', 'error');
+      return;
+    }
+    const added = (res.data?.images || []).map((image) => ({ url: image.url, key: image.key || '' }));
+    setFormData((current) => ({ ...current, images: [...current.images, ...added] }));
+    showToast('Photos stored in ImageKit', 'success');
+  };
 
   // Fetch Sarees
   const fetchSarees = useCallback(async () => {
@@ -236,7 +274,9 @@ export function SareesPage() {
   // Open Edit Form
   const handleOpenEdit = (saree) => {
     setEditingSaree(saree);
-    const images = (saree.images || []).map(imageUrl).filter(Boolean);
+    const images = (saree.images || [])
+      .map((image) => imageEntry(image))
+      .filter(Boolean);
     setFormData({
       ...saree,
       numericPrice: saree.numericPrice ?? '',
@@ -514,6 +554,7 @@ export function SareesPage() {
                   </th>
                   <th className="py-3.5 px-3">Saree</th>
                   <th className="py-3.5 px-3">Code</th>
+                  <th className="py-3.5 px-3 text-center">Qty</th>
                   <th className="py-3.5 px-3 text-center">Active</th>
                   <th className="py-3.5 pl-3 pr-6 text-right">Actions</th>
                 </tr>
@@ -564,6 +605,28 @@ export function SareesPage() {
                       <td className="py-3.5 px-3">
                         <div className="font-semibold text-charcoal-900">{dash(saree.productCode)}</div>
                         <span className="text-[10px] text-charcoal-400 block">{dash(saree.codeParts)}</span>
+                      </td>
+
+                      <td className="py-3.5 px-3">
+                        <div className="inline-flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => changeQuantity(saree, -1)}
+                            className="h-7 w-7 rounded-lg border border-sand-300 text-charcoal-700 hover:bg-sand-100"
+                            aria-label="Decrease quantity"
+                          >
+                            −
+                          </button>
+                          <span className="min-w-6 text-center font-semibold">{Number(saree.stockQuantity) || 0}</span>
+                          <button
+                            type="button"
+                            onClick={() => changeQuantity(saree, 1)}
+                            className="h-7 w-7 rounded-lg border border-sand-300 text-charcoal-700 hover:bg-sand-100"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
                       </td>
 
                       {/* Published while stock remains. A sold-out saree is not shown as active. */}
@@ -718,6 +781,61 @@ export function SareesPage() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[11px] font-medium text-charcoal-700 mb-1">Price (₹)</label>
+              <input
+                type="number"
+                min="0"
+                value={formData.numericPrice}
+                onChange={(e) => setFormData({ ...formData, numericPrice: e.target.value })}
+                className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-charcoal-700 mb-1">MRP (₹)</label>
+              <input
+                type="number"
+                min="0"
+                value={formData.numericMrp}
+                onChange={(e) => setFormData({ ...formData, numericMrp: e.target.value })}
+                className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-charcoal-700 mb-1">Quantity in stock</label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData({
+                    ...formData,
+                    stockQuantity: Math.max(0, Number(formData.stockQuantity || 0) - 1),
+                  })}
+                  className="h-8 w-8 rounded-lg border border-sand-300"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.stockQuantity}
+                  onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
+                  className="w-full rounded-lg border border-sand-300 px-3 py-1.5 text-xs bg-white text-center"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormData({
+                    ...formData,
+                    stockQuantity: Number(formData.stockQuantity || 0) + 1,
+                  })}
+                  className="h-8 w-8 rounded-lg border border-sand-300"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Product photo */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -798,12 +916,12 @@ export function SareesPage() {
             </div>
 
             {/* Add Image URL Row */}
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
               <input
                 type="url"
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
-                placeholder="Paste high-res image URL (e.g. Unsplash or CDN asset)..."
+                placeholder="Or paste an image URL"
                 className="flex-1 rounded-xl border border-sand-300 px-3 py-2 text-xs"
               />
               <button
@@ -811,8 +929,20 @@ export function SareesPage() {
                 onClick={addImageUrl}
                 className="px-3.5 py-2 rounded-xl bg-sand-200 hover:bg-sand-300 text-charcoal-800 text-xs font-medium transition-colors"
               >
-                Append Image
+                Append URL
               </button>
+              <label className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-gold-600 hover:bg-gold-700 text-white text-xs font-semibold cursor-pointer">
+                <Upload className="w-3.5 h-3.5" />
+                {uploadingImages ? 'Uploading...' : 'Upload from device'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  disabled={uploadingImages}
+                  onChange={uploadDeviceImages}
+                />
+              </label>
             </div>
           </div>
 

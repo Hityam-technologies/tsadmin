@@ -194,7 +194,7 @@ export function TryOnUsagePage() {
       </div>
 
       <div className="bg-white rounded-[22px] border border-sand-200 overflow-hidden">
-        {loading ? <TableSkeleton rows={8} cols={6} /> : (
+        {loading ? <TableSkeleton rows={8} cols={6} /> : (    
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-sand-50 text-charcoal-500">

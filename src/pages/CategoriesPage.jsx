@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { categoryService } from '../services/categoryService';
+import { mediaService } from '../services/mediaService';
 import { useToast } from '../context/ToastContext';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { Plus, ArrowUp, ArrowDown, Edit, Trash2 } from 'lucide-react';
+import { Plus, ArrowUp, ArrowDown, Edit, Trash2, Upload } from 'lucide-react';
 import { dash } from '../lib/utils';
 
 export function CategoriesPage() {
@@ -27,6 +28,7 @@ export function CategoriesPage() {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const loadCategories = async () => {
     const res = await categoryService.getCategories();
@@ -78,7 +80,12 @@ export function CategoriesPage() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '');
 
-    const payload = { ...formData, slug };
+    const payload = {
+      label: formData.label.trim(),
+      id: slug,
+      coverImageUrl: formData.image,
+      isActive: formData.isActive,
+    };
 
     if (editingCategory) {
       const res = await categoryService.updateCategory(editingCategory.id, payload);
@@ -304,9 +311,32 @@ export function CategoriesPage() {
               type="url"
               value={formData.image}
               onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              required
+              placeholder="https://ik.imagekit.io/..."
               className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500"
             />
+            <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gold-600 text-white text-xs font-semibold cursor-pointer">
+              <Upload className="w-3.5 h-3.5" />
+              {uploadingCover ? 'Uploading...' : 'Upload from device'}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = '';
+                  if (!file) return;
+                  setUploadingCover(true);
+                  const res = await mediaService.uploadImage(file, 'categories');
+                  setUploadingCover(false);
+                  if (!res.success) {
+                    showToast(res.error?.message || 'The cover could not be uploaded', 'error');
+                    return;
+                  }
+                  setFormData((current) => ({ ...current, image: res.data.url }));
+                  showToast('Cover stored in ImageKit', 'success');
+                }}
+              />
+            </label>
           </div>
 
           <div>
