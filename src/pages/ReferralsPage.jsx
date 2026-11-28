@@ -24,7 +24,7 @@ export function ReferralsPage() {
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const load = async (nextStatus = status, nextSearch = search) => {
+  const load = React.useCallback(async (nextStatus = status, nextSearch = search) => {
     const [settingsResult, listResult] = await Promise.all([
       commerceService.referralSettings(),
       commerceService.referrals({ status: nextStatus, search: nextSearch }),
@@ -37,9 +37,9 @@ export function ReferralsPage() {
       });
     }
     if (listResult.success) setRows(listResult.data?.items || []);
-  };
+  }, [status, search]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const save = async () => {
     setSaving(true);

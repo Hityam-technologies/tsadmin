@@ -88,7 +88,8 @@ describe('Store Billing API workflow', () => {
     const totals = billingService.calculateTotals({
       items: [{ price: 30000, quantity: 1 }],
       services: [{ price: 350 }],
-      couponCode: 'HERITAGE10',
+      discountType: 'percent',
+      discountValue: 10,
     });
 
     expect(totals.grossTotal).toBe(30350);

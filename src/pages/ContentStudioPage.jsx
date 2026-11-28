@@ -7,6 +7,7 @@ import { Modal } from '../components/common/Modal';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import {
   Film,
+  Images,
   MapPin,
   MessageCircle,
   HelpCircle,
@@ -26,8 +27,9 @@ export function ContentStudioPage() {
 
   const [activeTab, setActiveTab] = useState('hero'); // 'hero' | 'store' | 'support' | 'faq' | 'legal'
 
-  // 1. Hero Video State
+  // 1. Hero showcase (video reel OR auto-sliding carousel)
   const [heroVideo, setHeroVideo] = useState({
+    mode: 'video',
     title: '',
     subtitle: '',
     videoUrl: '',
@@ -39,7 +41,11 @@ export function ContentStudioPage() {
     autoPlay: true,
     loop: true,
     isActive: true,
+    carouselImages: [],
+    carouselIntervalMs: 4500,
   });
+  const heroMode = heroVideo.mode === 'carousel' ? 'carousel' : 'video';
+  const carouselImages = Array.isArray(heroVideo.carouselImages) ? heroVideo.carouselImages : [];
 
   // 2. STORE State
   const [storeAddress, setStoreAddress] = useState({
@@ -112,12 +118,34 @@ export function ContentStudioPage() {
     loadData();
   }, [activeTab, legalType]);
 
-  // Save Hero Video
+  // Save Hero showcase
   const handleSaveHero = async (e) => {
     e.preventDefault();
     const res = await contentService.updateHeroVideo(heroVideo);
-    if (res.success) showToast('Hero video reel updated successfully', 'success');
-    else showToast(res.error?.message || 'The home screen could not be saved', 'error');
+    if (res.success) {
+      showToast(
+        heroMode === 'carousel'
+          ? 'Hero carousel published to the app home screen'
+          : 'Hero video reel updated successfully',
+        'success',
+      );
+    } else {
+      showToast(res.error?.message || 'The home screen could not be saved', 'error');
+    }
+  };
+
+  const setHeroMode = (mode) => {
+    setHeroVideo((current) => ({ ...current, mode }));
+  };
+
+  const publishHero = async (nextHero, successMessage) => {
+    setHeroVideo(nextHero);
+    const publish = await contentService.updateHeroVideo(nextHero);
+    if (publish.success) {
+      showToast(successMessage, 'success');
+    } else {
+      showToast(publish.error?.message || 'Uploaded, but save failed. Press Save Hero Changes.', 'error');
+    }
   };
 
   const uploadHeroFile = async (event, kind) => {
@@ -125,21 +153,94 @@ export function ContentStudioPage() {
     event.target.value = '';
     if (!file) return;
     setUploadingHero(kind);
-    const res = kind === 'video'
-      ? await mediaService.uploadHeroVideo(file)
-      : await mediaService.uploadImage(file, 'hero');
-    setUploadingHero('');
-    if (!res.success) {
-      showToast(res.error?.message || 'Upload failed', 'error');
-      return;
+    try {
+      const res = kind === 'video'
+        ? await mediaService.uploadHeroVideo(file)
+        : await mediaService.uploadImage(file, 'hero');
+      if (!res.success) {
+        showToast(res.error?.message || 'Upload failed', 'error');
+        return;
+      }
+      const saved = res.data || {};
+      let nextHero = { ...heroVideo };
+
+      if (kind === 'video') {
+        nextHero = {
+          ...nextHero,
+          mode: 'video',
+          videoUrl: saved.url,
+          videoFileId: saved.fileId || '',
+          isActive: true,
+        };
+
+        // Capture a real still frame and publish it as posterUrl so the app
+        // never shows the empty cream gradient while the reel buffers.
+        try {
+          const { captureVideoPoster } = await import('../lib/captureVideoPoster');
+          const posterFile = await captureVideoPoster(file);
+          const posterRes = await mediaService.uploadImage(posterFile, 'hero');
+          if (posterRes.success && posterRes.data?.url) {
+            nextHero = {
+              ...nextHero,
+              posterUrl: posterRes.data.url,
+              posterFileId: posterRes.data.fileId || '',
+            };
+          }
+        } catch {
+          // Video still publishes; admin can upload a poster manually.
+        }
+      } else if (kind === 'poster') {
+        nextHero = {
+          ...nextHero,
+          posterUrl: saved.url,
+          posterFileId: saved.fileId || '',
+        };
+      } else if (kind === 'carousel') {
+        const slide = {
+          id: `slide-${Date.now()}`,
+          url: saved.url,
+          fileId: saved.fileId || '',
+        };
+        nextHero = {
+          ...nextHero,
+          mode: 'carousel',
+          carouselImages: [...(Array.isArray(nextHero.carouselImages) ? nextHero.carouselImages : []), slide],
+          isActive: true,
+        };
+      } else {
+        nextHero = {
+          ...nextHero,
+          logoUrl: saved.url,
+          logoFileId: saved.fileId || '',
+        };
+      }
+
+      const successMessage = kind === 'video'
+        ? nextHero.posterUrl
+          ? 'Hero video + poster published to the app home screen.'
+          : 'Hero video published. Upload a poster image for the best loading look.'
+        : kind === 'carousel'
+          ? 'Carousel image added and published.'
+          : 'Hero media uploaded and saved.';
+      await publishHero(nextHero, successMessage);
+    } finally {
+      setUploadingHero('');
     }
-    const saved = res.data || {};
-    setHeroVideo((current) => {
-      if (kind === 'video') return { ...current, videoUrl: saved.url, videoFileId: saved.fileId || '' };
-      if (kind === 'poster') return { ...current, posterUrl: saved.url, posterFileId: saved.fileId || '' };
-      return { ...current, logoUrl: saved.url, logoFileId: saved.fileId || '' };
+  };
+
+  const reorderCarouselImage = (idx, dir) => {
+    const next = [...carouselImages];
+    const swap = dir === 'up' ? idx - 1 : idx + 1;
+    if (swap < 0 || swap >= next.length) return;
+    [next[idx], next[swap]] = [next[swap], next[idx]];
+    setHeroVideo({ ...heroVideo, carouselImages: next });
+  };
+
+  const removeCarouselImage = (idx) => {
+    setHeroVideo({
+      ...heroVideo,
+      carouselImages: carouselImages.filter((_, i) => i !== idx),
     });
-    showToast('Stored in ImageKit. Press Save to show it on the home screen.', 'success');
   };
 
   // Save Store Address
@@ -266,7 +367,7 @@ export function ContentStudioPage() {
   };
 
   const tabs = [
-    { id: 'hero', label: 'Hero Video Reel', icon: Film },
+    { id: 'hero', label: 'Home Hero', icon: Film },
     { id: 'store', label: 'Store Address', icon: MapPin },
     { id: 'support', label: 'Support Concierge Channels', icon: MessageCircle },
     { id: 'faq', label: 'FAQ Manager', icon: HelpCircle },
@@ -285,7 +386,7 @@ export function ContentStudioPage() {
             Content Studio
           </h1>
           <p className="text-xs text-charcoal-500 mt-1">
-            Dynamic content control: hero reels, flagship studio coordinates, client support dialers, FAQs, and legal policies.
+            Dynamic content control: home hero (video or carousel), flagship studio coordinates, client support dialers, FAQs, and legal policies.
           </p>
         </div>
       </div>
@@ -311,16 +412,16 @@ export function ContentStudioPage() {
         })}
       </div>
 
-      {/* Tab 1: Hero Video Reel */}
+      {/* Tab 1: Home Hero (video | carousel) */}
       {activeTab === 'hero' && (
         <form onSubmit={handleSaveHero} className="bg-white p-6 rounded-2xl border border-sand-300 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-sand-200 pb-4">
             <div>
               <h3 className="font-serif font-bold text-base text-charcoal-900">
-                Mobile Home Showcase Video
+                Mobile Home Hero
               </h3>
               <p className="text-xs text-charcoal-500">
-                Streamed directly on mobile Home screen backdrop underneath the interactive sheet.
+                Choose video reel mode or an auto-sliding image carousel for the home backdrop.
               </p>
             </div>
             <button
@@ -329,6 +430,35 @@ export function ContentStudioPage() {
             >
               <Save className="w-4 h-4" /> Save Hero Changes
             </button>
+          </div>
+
+          {/* Mode switch */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setHeroMode('video')}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                heroMode === 'video'
+                  ? 'bg-charcoal-900 text-white'
+                  : 'border border-sand-300 text-charcoal-700 hover:bg-sand-100'
+              }`}
+            >
+              <Film className="w-3.5 h-3.5" /> Video mode
+            </button>
+            <button
+              type="button"
+              onClick={() => setHeroMode('carousel')}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                heroMode === 'carousel'
+                  ? 'bg-charcoal-900 text-white'
+                  : 'border border-sand-300 text-charcoal-700 hover:bg-sand-100'
+              }`}
+            >
+              <Images className="w-3.5 h-3.5" /> Carousel mode
+            </button>
+            <span className="text-[11px] text-charcoal-500 ml-1">
+              Only the selected mode appears on the mobile home screen.
+            </span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -359,40 +489,139 @@ export function ContentStudioPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                  Home video
-                </label>
-                <input
-                  type="url"
-                  value={heroVideo.videoUrl || ''}
-                  onChange={(e) => setHeroVideo({ ...heroVideo, videoUrl: e.target.value })}
-                  placeholder="ImageKit video URL"
-                  className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500 font-mono text-[11px]"
-                />
-                <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gold-600 text-white text-xs font-semibold cursor-pointer">
-                  <Upload className="w-3.5 h-3.5" />
-                  {uploadingHero === 'video' ? 'Uploading video...' : 'Upload video from device'}
-                  <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => uploadHeroFile(e, 'video')} />
-                </label>
-              </div>
+              {heroMode === 'video' ? (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+                      Home video
+                    </label>
+                    <input
+                      type="url"
+                      value={heroVideo.videoUrl || ''}
+                      onChange={(e) => setHeroVideo({ ...heroVideo, videoUrl: e.target.value })}
+                      placeholder="ImageKit video URL"
+                      className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500 font-mono text-[11px]"
+                    />
+                    <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gold-600 text-white text-xs font-semibold cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      {uploadingHero === 'video' ? 'Uploading video...' : 'Upload video from device'}
+                      <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => uploadHeroFile(e, 'video')} />
+                    </label>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-charcoal-800 mb-1">
-                  Poster image
-                </label>
-                <input
-                  type="url"
-                  value={heroVideo.posterUrl || ''}
-                  onChange={(e) => setHeroVideo({ ...heroVideo, posterUrl: e.target.value })}
-                  className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500 font-mono text-[11px]"
-                />
-                <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-sand-300 text-xs font-semibold cursor-pointer">
-                  <Upload className="w-3.5 h-3.5" />
-                  {uploadingHero === 'poster' ? 'Uploading poster...' : 'Upload poster from device'}
-                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => uploadHeroFile(e, 'poster')} />
-                </label>
-              </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+                      Poster image
+                    </label>
+                    <input
+                      type="url"
+                      value={heroVideo.posterUrl || ''}
+                      onChange={(e) => setHeroVideo({ ...heroVideo, posterUrl: e.target.value })}
+                      className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500 font-mono text-[11px]"
+                    />
+                    <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-sand-300 text-xs font-semibold cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      {uploadingHero === 'poster' ? 'Uploading poster...' : 'Upload poster from device'}
+                      <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => uploadHeroFile(e, 'poster')} />
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+                      Slide interval (seconds)
+                    </label>
+                    <input
+                      type="number"
+                      min={2}
+                      max={20}
+                      step={0.5}
+                      value={Math.round((Number(heroVideo.carouselIntervalMs) || 4500) / 100) / 10}
+                      onChange={(e) => {
+                        const seconds = Number(e.target.value);
+                        const ms = Math.min(20000, Math.max(2000, Math.round(seconds * 1000) || 4500));
+                        setHeroVideo({ ...heroVideo, carouselIntervalMs: ms });
+                      }}
+                      className="w-full rounded-xl border border-sand-300 px-3 py-2 text-xs focus:border-gold-500"
+                    />
+                    <p className="mt-1 text-[11px] text-charcoal-500">
+                      How long each image stays on screen before sliding to the next (2–20s).
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-semibold text-charcoal-800">
+                        Carousel images ({carouselImages.length})
+                      </label>
+                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gold-600 text-white text-xs font-semibold cursor-pointer">
+                        <Plus className="w-3.5 h-3.5" />
+                        {uploadingHero === 'carousel' ? 'Uploading...' : 'Add image'}
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={(e) => uploadHeroFile(e, 'carousel')}
+                        />
+                      </label>
+                    </div>
+
+                    {carouselImages.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-sand-300 px-4 py-8 text-center text-xs text-charcoal-500">
+                        Upload at least two images for a smooth auto-slide on the home screen.
+                      </div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {carouselImages.map((slide, idx) => (
+                          <li
+                            key={slide.id || slide.url || idx}
+                            className="flex items-center gap-3 rounded-xl border border-sand-200 bg-sand-50/60 p-2"
+                          >
+                            <img
+                              src={slide.url}
+                              alt={`Slide ${idx + 1}`}
+                              className="h-14 w-20 rounded-lg object-cover bg-sand-200"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-semibold text-charcoal-800">Slide {idx + 1}</p>
+                              <p className="text-[10px] text-charcoal-500 truncate font-mono">{slide.url}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => reorderCarouselImage(idx, 'up')}
+                                disabled={idx === 0}
+                                className="p-1.5 rounded-lg border border-sand-300 text-charcoal-600 disabled:opacity-30"
+                                title="Move up"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => reorderCarouselImage(idx, 'down')}
+                                disabled={idx === carouselImages.length - 1}
+                                className="p-1.5 rounded-lg border border-sand-300 text-charcoal-600 disabled:opacity-30"
+                                title="Move down"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeCarouselImage(idx)}
+                                className="p-1.5 rounded-lg border border-sand-300 text-red-600"
+                                title="Remove"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-charcoal-800 mb-1">
@@ -415,15 +644,17 @@ export function ContentStudioPage() {
               </div>
 
               <div className="flex items-center gap-6 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={heroVideo.autoPlay}
-                    onChange={(e) => setHeroVideo({ ...heroVideo, autoPlay: e.target.checked })}
-                    className="rounded border-sand-400 text-gold-600 focus:ring-gold-500"
-                  />
-                  <span className="text-xs font-medium text-charcoal-800">Autoplay on Load</span>
-                </label>
+                {heroMode === 'video' ? (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={heroVideo.autoPlay}
+                      onChange={(e) => setHeroVideo({ ...heroVideo, autoPlay: e.target.checked })}
+                      className="rounded border-sand-400 text-gold-600 focus:ring-gold-500"
+                    />
+                    <span className="text-xs font-medium text-charcoal-800">Autoplay on Load</span>
+                  </label>
+                ) : null}
 
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -437,9 +668,19 @@ export function ContentStudioPage() {
               </div>
             </div>
 
-            {/* Live Video Preview Box */}
+            {/* Live preview */}
             <div className="rounded-xl overflow-hidden border border-sand-300 bg-black flex flex-col justify-center items-center relative aspect-video">
-              {heroVideo.videoUrl ? (
+              {heroMode === 'carousel' ? (
+                carouselImages[0]?.url ? (
+                  <img
+                    src={carouselImages[0].url}
+                    alt="Carousel preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-sand-400 text-xs">Add carousel images to preview</span>
+                )
+              ) : heroVideo.videoUrl ? (
                 <video
                   src={heroVideo.videoUrl}
                   poster={heroVideo.posterUrl}
@@ -452,6 +693,16 @@ export function ContentStudioPage() {
               ) : (
                 <span className="text-sand-400 text-xs">No video URL provided</span>
               )}
+              {heroMode === 'carousel' && carouselImages.length > 0 ? (
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+                  {carouselImages.map((slide, idx) => (
+                    <span
+                      key={slide.id || slide.url || idx}
+                      className={`h-1.5 rounded-full ${idx === 0 ? 'w-4 bg-white' : 'w-1.5 bg-white/40'}`}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
         </form>

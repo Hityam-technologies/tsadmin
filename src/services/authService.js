@@ -35,6 +35,13 @@ export const authService = {
     });
   },
 
+  async resetPassword(email, code, newPassword) {
+    return apiRequest('/api/v1/admin/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, code, newPassword }),
+    });
+  },
+
   async changePassword(currentPassword, newPassword) {
     return apiRequest('/api/v1/admin/auth/change-password', {
       method: 'PUT',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -7,23 +7,24 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { GuestRoute } from './components/auth/GuestRoute';
 import { SessionGate } from './components/auth/SessionGate';
 import { AdminLayout } from './components/layout/AdminLayout';
-
-// Pages
 import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { SareesPage } from './pages/SareesPage';
-import { CategoriesPage } from './pages/CategoriesPage';
-import { EnquiriesPage } from './pages/EnquiriesPage';
-import { UsersPage } from './pages/UsersPage';
-import { TryOnAIPage } from './pages/TryOnAIPage';
-import { OrdersPage } from './pages/OrdersPage';
-import { CouponsPage } from './pages/CouponsPage';
-import { ReferralsPage } from './pages/ReferralsPage';
-import { ContentStudioPage } from './pages/ContentStudioPage';
-import { SystemSettingsPage } from './pages/SystemSettingsPage';
-import { AuditLogsPage } from './pages/AuditLogsPage';
-import { BillingWorkspacePage } from './pages/BillingWorkspacePage';
 import { BillingAccessPage } from './pages/BillingAccessPage';
+
+const lazyNamed = (loader, name) => lazy(() => loader().then((mod) => ({ default: mod[name] })));
+
+const DashboardPage = lazyNamed(() => import('./pages/DashboardPage'), 'DashboardPage');
+const SareesPage = lazyNamed(() => import('./pages/SareesPage'), 'SareesPage');
+const CategoriesPage = lazyNamed(() => import('./pages/CategoriesPage'), 'CategoriesPage');
+const EnquiriesPage = lazyNamed(() => import('./pages/EnquiriesPage'), 'EnquiriesPage');
+const UsersPage = lazyNamed(() => import('./pages/UsersPage'), 'UsersPage');
+const TryOnAIPage = lazyNamed(() => import('./pages/TryOnAIPage'), 'TryOnAIPage');
+const OrdersPage = lazyNamed(() => import('./pages/OrdersPage'), 'OrdersPage');
+const CouponsPage = lazyNamed(() => import('./pages/CouponsPage'), 'CouponsPage');
+const ReferralsPage = lazyNamed(() => import('./pages/ReferralsPage'), 'ReferralsPage');
+const ContentStudioPage = lazyNamed(() => import('./pages/ContentStudioPage'), 'ContentStudioPage');
+const SystemSettingsPage = lazyNamed(() => import('./pages/SystemSettingsPage'), 'SystemSettingsPage');
+const AuditLogsPage = lazyNamed(() => import('./pages/AuditLogsPage'), 'AuditLogsPage');
+const BillingWorkspacePage = lazyNamed(() => import('./pages/BillingWorkspacePage'), 'BillingWorkspacePage');
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,7 +59,8 @@ export function App() {
       <ToastProvider>
         <AuthProvider>
           <BrowserRouter>
-            <Routes>
+            <Suspense fallback={<SessionGate />}>
+              <Routes>
               {/* Root Gate */}
               <Route path="/" element={<RootGate />} />
 
@@ -105,7 +107,8 @@ export function App() {
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </AuthProvider>
       </ToastProvider>

@@ -21,6 +21,16 @@ import { NewCustomerModal } from '../components/billing/NewCustomerModal';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { BillingAccessPage } from './BillingAccessPage';
 
+const EMPTY_CUSTOMER = {
+  name: 'Walk-in Guest',
+  phone: '',
+  email: '',
+  city: 'Hyderabad',
+  gstin: '',
+  avatarUrl: '',
+  isWalkIn: true,
+};
+
 export function BillingWorkspacePage() {
   const { currentUser, logout, isRestoring } = useAuth();
   const { showToast } = useToast();
@@ -114,16 +124,6 @@ export function BillingWorkspacePage() {
   // Day summary ticker
   const [todaySummary, setTodaySummary] = useState(null);
 
-  const emptyCustomer = {
-    name: 'Walk-in Guest',
-    phone: '',
-    email: '',
-    city: 'Hyderabad',
-    gstin: '',
-    avatarUrl: '',
-    isWalkIn: true,
-  };
-
   // Billing starts a new round. Back stays on the register and clears the bill.
   useEffect(() => {
     if (!sessionReady) return undefined;
@@ -131,7 +131,7 @@ export function BillingWorkspacePage() {
       setActiveTab('pos');
       setCartItems([]);
       setSelectedServices([]);
-      setCustomer(emptyCustomer);
+      setCustomer(EMPTY_CUSTOMER);
       setIsPaymentOpen(false);
       setIsInvoiceOpen(false);
       setIsWhatsAppOpen(false);

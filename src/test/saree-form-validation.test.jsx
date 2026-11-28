@@ -1,7 +1,93 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { sareeService } from '../services/sareeService';
 
 describe('Saree Form Validation & Catalog Operations', () => {
+  let db;
+
+  beforeEach(() => {
+    db = new Map([
+      [
+        'saree-1',
+        {
+          id: 'saree-1',
+          title: 'Royal Kanjivaram Silk',
+          price: '₹35,000',
+          numericPrice: 35000,
+          stockQuantity: 3,
+        },
+      ],
+      [
+        'saree-10',
+        {
+          id: 'saree-10',
+          title: 'Heritage Silk',
+          price: '₹24,000',
+          numericPrice: 24000,
+          stockQuantity: 1,
+        },
+      ],
+    ]);
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, init = {}) => {
+      const target = String(url);
+      const method = (init.method || 'GET').toUpperCase();
+      const formatInr = (num) => `₹${Number(num || 0).toLocaleString('en-IN')}`;
+
+      if (target.endsWith('/api/v1/admin/sarees') && method === 'POST') {
+        const body = JSON.parse(init.body || '{}');
+        const created = {
+          ...body,
+          id: `saree-${Date.now()}`,
+          price: formatInr(body.numericPrice),
+          mrp: formatInr(body.numericMrp),
+        };
+        db.set(created.id, created);
+        return { ok: true, status: 201, json: async () => ({ success: true, data: created }) };
+      }
+
+      const dupMatch = target.match(/\/api\/v1\/admin\/sarees\/([^/]+)\/duplicate$/);
+      if (dupMatch && method === 'POST') {
+        const src = db.get(dupMatch[1]);
+        if (!src) return { ok: false, status: 404, json: async () => ({ success: false, error: { message: 'Not found' } }) };
+        const copy = { ...src, id: `${src.id}-copy`, title: `${src.title} (Copy)` };
+        db.set(copy.id, copy);
+        return { ok: true, status: 201, json: async () => ({ success: true, data: copy }) };
+      }
+
+      const itemMatch = target.match(/\/api\/v1\/admin\/sarees\/([^/?]+)$/);
+      if (itemMatch) {
+        const id = itemMatch[1];
+        const existing = db.get(id);
+        if (!existing) {
+          return { ok: false, status: 404, json: async () => ({ success: false, error: { message: 'Not found' } }) };
+        }
+        if (method === 'GET') {
+          return { ok: true, status: 200, json: async () => ({ success: true, data: existing }) };
+        }
+        if (method === 'PUT') {
+          const patch = JSON.parse(init.body || '{}');
+          const updated = {
+            ...existing,
+            ...patch,
+            ...(patch.numericPrice != null ? { price: formatInr(patch.numericPrice) } : {}),
+          };
+          db.set(id, updated);
+          return { ok: true, status: 200, json: async () => ({ success: true, data: updated }) };
+        }
+        if (method === 'DELETE') {
+          db.delete(id);
+          return { ok: true, status: 200, json: async () => ({ success: true, data: { deleted: true } }) };
+        }
+      }
+
+      return { ok: false, status: 404, json: async () => ({ success: false, error: { message: 'Not found' } }) };
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('creates a new saree with valid attributes and calculates INR formatted strings', async () => {
     const newSaree = {
       title: 'Aura of Ayodhya Banarasi Katan Silk',

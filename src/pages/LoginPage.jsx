@@ -19,7 +19,11 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [resetSent, setResetSent] = useState(false);
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetStep, setResetStep] = useState('email');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,13 +46,55 @@ export function LoginPage() {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
+    setResetError('');
     if (!resetEmail.trim()) {
-      showToast('Please enter your email', 'warning');
+      setResetError('Please enter your email.');
       return;
     }
-    await forgotPassword(resetEmail);
-    setResetSent(true);
-    showToast(`Password reset link dispatched to ${resetEmail}`, 'info');
+    setResetSubmitting(true);
+    try {
+      const res = await forgotPassword(resetEmail.trim());
+      if (!res?.success) {
+        setResetError(res?.error?.message || 'Unable to send reset code.');
+        return;
+      }
+      setResetCode('');
+      setNewPassword('');
+      setResetStep('verify');
+      showToast(`Reset code dispatched to ${resetEmail.trim()}`, 'info');
+    } finally {
+      setResetSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setResetError('');
+    const cleanCode = resetCode.trim();
+    if (!/^\d{6}$/.test(cleanCode)) {
+      setResetError('Enter the 6-digit verification code sent to your email.');
+      return;
+    }
+    if (newPassword.length < 8 || !/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+      setResetError('Password must be at least 8 characters and include a special character.');
+      return;
+    }
+    setResetSubmitting(true);
+    try {
+      const { authService } = await import('../services/authService');
+      const res = await authService.resetPassword(resetEmail.trim(), cleanCode, newPassword);
+      if (!res?.success) {
+        setResetError(res?.error?.message || 'The code is invalid or expired.');
+        return;
+      }
+      showToast('Password updated. Please sign in.', 'success');
+      setIsForgotPasswordOpen(false);
+      setResetStep('email');
+      setEmail(resetEmail.trim());
+      setPassword('');
+    } finally {
+      setResetSubmitting(false);
+    }
   };
 
 
@@ -113,7 +159,10 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setResetSent(false);
+                    setResetStep('email');
+                    setResetError('');
+                    setResetCode('');
+                    setNewPassword('');
                     setResetEmail(email);
                     setIsForgotPasswordOpen(true);
                   }}
@@ -182,28 +231,90 @@ export function LoginPage() {
         isOpen={isForgotPasswordOpen}
         onClose={() => setIsForgotPasswordOpen(false)}
         title="Administrative Password Recovery"
-        subtitle="Dispatch recovery instructions to your registered email"
+        subtitle={
+          resetStep === 'verify'
+            ? `Enter the 6-digit code sent to ${resetEmail}`
+            : 'Send a 6-digit recovery code to your registered email'
+        }
         maxWidth="max-w-md"
       >
-        {resetSent ? (
-          <div className="text-center py-4">
-            <div className="w-12 h-12 rounded-full bg-gold-50 text-gold-700 flex items-center justify-center mx-auto mb-3">
-              <Sparkles className="w-6 h-6" />
+        {resetStep === 'verify' ? (
+          <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
+            <div className="rounded-xl bg-gold-50/70 border border-gold-200 px-3.5 py-2.5 flex items-center gap-2 text-xs text-charcoal-700">
+              <Sparkles className="w-4 h-4 text-gold-700 flex-shrink-0" />
+              <span>
+                Check <span className="font-semibold text-charcoal-900">{resetEmail}</span> (and spam) for your 6-digit code.
+              </span>
             </div>
-            <h4 className="font-serif font-bold text-charcoal-900 mb-1">Link Dispatched</h4>
-            <p className="text-xs text-charcoal-500 mb-6">
-              A temporary password reset link has been dispatched to{' '}
-              <span className="font-semibold text-charcoal-900">{resetEmail}</span>.
-            </p>
-            <button
-              onClick={() => setIsForgotPasswordOpen(false)}
-              className="px-4 py-2 rounded-xl bg-gold-600 hover:bg-gold-700 text-white text-xs font-semibold"
-            >
-              Back to Login
-            </button>
-          </div>
+            {resetError && (
+              <div className="p-3 rounded-xl bg-maroon-50 border border-maroon-300 text-maroon-800 text-xs font-semibold">
+                {resetError}
+              </div>
+            )}
+            <div>
+              <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+                6-Digit Verification Code
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                required
+                placeholder="123456"
+                className="w-full rounded-xl border border-sand-300 px-3.5 py-2 text-xs tracking-widest font-mono text-charcoal-900 focus:border-gold-500 focus:ring-1 focus:ring-gold-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-charcoal-800 mb-1">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                placeholder="At least 8 characters + 1 special symbol"
+                className="w-full rounded-xl border border-sand-300 px-3.5 py-2 text-xs text-charcoal-900 focus:border-gold-500 focus:ring-1 focus:ring-gold-500"
+              />
+            </div>
+            <div className="flex justify-between items-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setResetStep('email');
+                  setResetError('');
+                }}
+                className="text-xs font-medium text-charcoal-600 hover:text-charcoal-900"
+              >
+                Change email
+              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsForgotPasswordOpen(false)}
+                  className="px-3.5 py-2 rounded-xl border border-sand-300 text-xs text-charcoal-700 hover:bg-sand-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={resetSubmitting}
+                  className="px-4 py-2 rounded-xl bg-gold-600 hover:bg-gold-700 text-white text-xs font-semibold shadow-sm disabled:opacity-50"
+                >
+                  {resetSubmitting ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
+            </div>
+          </form>
         ) : (
           <form onSubmit={handleForgotPassword} className="space-y-4 pt-2">
+            {resetError && (
+              <div className="p-3 rounded-xl bg-maroon-50 border border-maroon-300 text-maroon-800 text-xs font-semibold">
+                {resetError}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-semibold text-charcoal-800 mb-1">
                 Registered Work Email
@@ -227,9 +338,10 @@ export function LoginPage() {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-gold-600 hover:bg-gold-700 text-white text-xs font-semibold shadow-sm"
+                disabled={resetSubmitting}
+                className="px-4 py-2 rounded-xl bg-gold-600 hover:bg-gold-700 text-white text-xs font-semibold shadow-sm disabled:opacity-50"
               >
-                Send Instructions
+                {resetSubmitting ? 'Sending...' : 'Send Code'}
               </button>
             </div>
           </form>

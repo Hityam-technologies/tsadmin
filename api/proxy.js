@@ -6,7 +6,7 @@
  * so a reload opens the dashboard instead of the login screen.
  */
 
-const UPSTREAM = 'https://tripuraabackend.onrender.com';
+const UPSTREAM = process.env.API_UPSTREAM || 'https://tripuraabackend.onrender.com';
 
 const SKIP = new Set([
   'host',

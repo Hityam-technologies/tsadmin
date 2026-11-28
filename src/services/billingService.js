@@ -155,7 +155,6 @@ export const billingService = {
     services = [],
     discountType = 'none',
     discountValue = 0,
-    couponCode = '',
   }) {
     const itemsSubtotal = items.reduce(
       (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
@@ -165,14 +164,7 @@ export const billingService = {
     const grossTotal = itemsSubtotal + servicesSubtotal;
 
     let discountTotal = 0;
-    const cleanCoupon = String(couponCode).trim().toUpperCase();
-    if (cleanCoupon === 'HERITAGE10') {
-      discountTotal = Math.round(itemsSubtotal * 0.1);
-    } else if (cleanCoupon === 'ROYAL5') {
-      discountTotal = Math.round(itemsSubtotal * 0.05);
-    } else if (cleanCoupon === 'FESTIVE2000') {
-      discountTotal = Math.min(2000, itemsSubtotal);
-    } else if (discountType === 'percent') {
+    if (discountType === 'percent') {
       const percentage = Math.min(100, Math.max(0, Number(discountValue) || 0));
       discountTotal = Math.round((itemsSubtotal * percentage) / 100);
     } else if (discountType === 'flat') {

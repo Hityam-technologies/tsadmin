@@ -123,8 +123,8 @@ export function SareesPage() {
   // Filters & Pagination State
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [stockFilter, setStockFilter] = useState('all');
+  const categoryFilter = 'all';
+  const stockFilter = 'all';
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 

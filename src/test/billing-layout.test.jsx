@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { BillingLayout } from '../components/billing/BillingLayout';
@@ -147,7 +147,43 @@ describe('CartDrawer & Custom Add-ons', () => {
 });
 
 describe('PaymentModal: Phone Verification & Automatic Recognition', () => {
-  it('opens on Step 1: Customer Phone Verification and auto-detects existing user', () => {
+  beforeEach(() => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+      const target = String(url);
+      if (target.includes('/api/v1/billing/customers/lookup')) {
+        if (target.includes('9823456789')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              success: true,
+              data: {
+                found: true,
+                customer: {
+                  id: 'cust-1',
+                  name: 'Ananya Deshmukh',
+                  phone: '9823456789',
+                  city: 'Hyderabad',
+                },
+              },
+            }),
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, data: { found: false, customer: null } }),
+        };
+      }
+      return { ok: true, status: 200, json: async () => ({ success: true, data: {} }) };
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('opens on Step 1: Customer Phone Verification and auto-detects existing user', async () => {
     render(
       <PaymentModal
         isOpen={true}
@@ -166,8 +202,8 @@ describe('PaymentModal: Phone Verification & Automatic Recognition', () => {
     fireEvent.change(phoneInput, { target: { value: '9823456789' } });
 
     // Auto-detection should display "Already User"
-    expect(screen.getByText(/already user \(in database\)/i)).toBeInTheDocument();
-    expect(screen.getByText('Ananya Deshmukh')).toBeInTheDocument();
+    expect(await screen.findByText(/already user \(in database\)/i)).toBeInTheDocument();
+    expect(await screen.findByText('Ananya Deshmukh')).toBeInTheDocument();
     expect(screen.queryByText(/tier/i)).not.toBeInTheDocument();
   });
 
@@ -200,6 +236,62 @@ describe('PaymentModal: Phone Verification & Automatic Recognition', () => {
 });
 
 describe('RecentBillsView: Direct Invoice Modal Trigger', () => {
+  beforeEach(() => {
+    const sampleInvoice = {
+      id: 'inv-42',
+      invoiceNumber: 'TS-INV-2026-0042',
+      date: '2026-11-20T10:30:00.000Z',
+      customer: { name: 'Ananya Deshmukh', phone: '9823456789' },
+      items: [{ title: 'Royal Bridal Gold Tissue Drape', quantity: 1, price: 45000 }],
+      pricing: { grandTotal: 45000 },
+      payment: { mode: 'upi' },
+      status: 'paid',
+    };
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+      const target = String(url);
+      if (target.includes('/api/v1/billing/invoices')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            success: true,
+            data: { items: [sampleInvoice], total: 1, page: 1, limit: 10, totalPages: 1 },
+          }),
+        };
+      }
+      if (target.includes('/api/v1/billing/sold-out')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            success: true,
+            data: {
+              products: [
+                {
+                  id: 'saree-sold-1',
+                  productCode: '100005',
+                  title: 'Royal Bridal Gold Tissue Drape',
+                  brand: 'Tripuraa',
+                  fabric: 'Pure Tissue Silk',
+                  colorTheme: 'Royal Gold',
+                  weave: 'Kadhwa',
+                  origin: 'Varanasi',
+                  numericPrice: 45000,
+                  relatedInvoice: sampleInvoice,
+                },
+              ],
+            },
+          }),
+        };
+      }
+      return { ok: true, status: 200, json: async () => ({ success: true, data: {} }) };
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('calls onViewInvoice directly when clicking on an invoice row or number', async () => {
     const onViewInvoice = vi.fn();
     render(
